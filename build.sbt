@@ -1,22 +1,37 @@
 import uk.gov.hmrc.DefaultBuildSettings
 
+ThisBuild / scalaVersion := "3.5.2"
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "3.3.6"
-ThisBuild / scalacOptions += "-Wconf:msg=Flag.*repeatedly:s"
+ThisBuild / scalafmtOnCompile := true
+ThisBuild / scalacOptions ++= Seq(
+  "-Werror",
+  "-Wconf:msg=Flag.*repeatedly:s"
+)
 
-lazy val microservice = Project("individuals-tax-liability-adjustments-api", file("."))
-  .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
-  .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
+val appName = "individuals-tax-liability-adjustments-api"
+
+lazy val microservice = Project(appName, file("."))
+  .enablePlugins(PlayScala, SbtDistributablesPlugin)
+  .disablePlugins(JUnitXmlReportPlugin) // Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
-    // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
-    // suppress warnings in generated routes files
-    scalacOptions += "-Wconf:src=routes/.*:s",
+    scalacOptions ++= Seq(
+      "-feature",
+      "-Wconf:src=routes/.*:s"
+    )
   )
-  .settings(CodeCoverageSettings.settings: _*)
+  .settings(
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
+    Compile / unmanagedClasspath += baseDirectory.value / "resources"
+  )
+  .settings(CodeCoverageSettings.settings)
+  .settings(PlayKeys.playDefaultPort := 7767)
 
 lazy val it = project
   .enablePlugins(PlayScala)
   .dependsOn(microservice % "test->test")
   .settings(DefaultBuildSettings.itSettings())
-  .settings(libraryDependencies ++= AppDependencies.it)
+  .settings(
+    Test / fork := true,
+    Test / javaOptions += "-Dlogger.resource=logback-test.xml")
+  .settings(libraryDependencies ++= AppDependencies.itDependencies)

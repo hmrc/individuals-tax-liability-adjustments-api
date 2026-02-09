@@ -1,1 +1,4 @@
 GET        /hello-world             v1.retrieveHelloWorld.HelloWorldController.hello
+
+DELETE     /:nino/:taxYear          v1.delete.DeleteTaxLiabilityAdjustmentsController.delete(nino: String, taxYear: String)
+

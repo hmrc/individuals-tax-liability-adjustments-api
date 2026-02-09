@@ -58,26 +58,6 @@ object ResolveTaxYear extends ResolverSupport {
 
 }
 
-case class ResolveTaxYearMinimum(
-    minimumTaxYear: TaxYear,
-    notSupportedError: MtdError = RuleTaxYearNotSupportedError,
-    formatError: MtdError = TaxYearFormatError,
-    rangeError: MtdError = RuleTaxYearRangeInvalidError
-) extends ResolverSupport {
-
-  val resolver: Resolver[String, TaxYear] =
-    ResolveTaxYear.resolverWithCustomErrors(formatError, rangeError).thenValidate(satisfiesMin(minimumTaxYear, notSupportedError))
-
-  def apply(value: String): Validated[Seq[MtdError], TaxYear] = resolver(value)
-
-  def apply(value: Option[String]): Validated[Seq[MtdError], Option[TaxYear]] =
-    value match {
-      case Some(value) => resolver(value).map(Some(_))
-      case None        => Valid(None)
-    }
-
-}
-
 case class ResolveDetailedTaxYear(minimumTaxYear: TaxYear,
                                   maximumTaxYear: Option[TaxYear] = None,
                                   minError: MtdError = RuleTaxYearNotSupportedError,

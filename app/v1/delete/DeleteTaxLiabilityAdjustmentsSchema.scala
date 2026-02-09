@@ -19,7 +19,7 @@ package v1.delete
 import api.models.domain.TaxYear
 import api.models.errors.MtdError
 import cats.data.Validated
-import api.controllers.validators.resolvers.ResolveTaxYearMinimum
+import api.controllers.validators.resolvers.ResolveDetailedTaxYear
 
 sealed trait DeleteTaxLiabilityAdjustmentsSchema
 
@@ -30,6 +30,8 @@ object DeleteTaxLiabilityAdjustmentsSchema {
   val schema: DeleteTaxLiabilityAdjustmentsSchema = Def1
 
   def schemaFor(taxYear: String): Validated[Seq[MtdError], DeleteTaxLiabilityAdjustmentsSchema] =
-    ResolveTaxYearMinimum(TaxYear.fromMtd("2026-27"))(taxYear).map(_ => Def1)
+    ResolveDetailedTaxYear(TaxYear.fromMtd("2026-27"))
+      .apply(taxYear)
+      .map(_ => Def1)
 
 }

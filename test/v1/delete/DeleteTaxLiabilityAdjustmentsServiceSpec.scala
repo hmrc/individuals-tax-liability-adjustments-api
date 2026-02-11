@@ -72,8 +72,7 @@ class DeleteTaxLiabilityAdjustmentsServiceSpec extends ServiceSpec {
         "1216"                 -> InternalError,
         "4200"                 -> RuleOutsideAmendmentWindowError,
         "5000"                 -> InternalError,
-        "5010"                 -> NotFoundError,
-        "UNMATCHED_STUB_ERROR" -> RuleIncorrectGovTestScenarioError
+        "5010"                 -> NotFoundError
       )
       errors.foreach(serviceError.tupled)
     }

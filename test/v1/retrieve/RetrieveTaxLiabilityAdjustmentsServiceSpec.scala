@@ -30,8 +30,8 @@ class RetrieveTaxLiabilityAdjustmentsServiceSpec extends ServiceSpec with Def1_R
 
   implicit override val correlationId: String = "X-123"
 
-  "RetrieveTaxLiabilityAdjustmentsService" when {
-    "downstream call is successful" when {
+  "RetrieveTaxLiabilityAdjustmentsService" should {
+    "return a successful call from downstream" when {
       "using schema Def1" in new Test {
         MockRetrieveTaxLiabilityAdjustmentsConnector
           .retrieveTaxLiabilityAdjustments(requestData)
@@ -45,8 +45,8 @@ class RetrieveTaxLiabilityAdjustmentsServiceSpec extends ServiceSpec with Def1_R
       }
     }
 
-    "downstream call is unsuccessful" should {
-      "map errors according to spec" when {
+    "return an unsuccessful response from downstream" when {
+      "map errors according to spec" should {
 
         def serviceError(downStreamErrorCode: String, error: MtdError): Unit =
           s"a $downStreamErrorCode error is returned from the service" in new Test {

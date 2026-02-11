@@ -156,6 +156,15 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
     }
   }
 
+  val singleErrorJson: JsValue = Json.parse(
+    """
+      |{
+      |   "code": "CODE",
+      |   "reason": "MESSAGE"
+      |}
+    """.stripMargin
+  )
+
   val malformedErrorJson: JsValue = Json.parse(
     """
       |{
@@ -202,6 +211,23 @@ class StandardDownstreamHttpParserSpec extends UnitSpec {
 
   private def handleErrorsCorrectly[A](httpReads: HttpReads[DownstreamOutcome[A]]): Unit =
     List(BAD_REQUEST, NOT_FOUND, FORBIDDEN, CONFLICT, GONE, UNPROCESSABLE_ENTITY, NOT_IMPLEMENTED).foreach { responseCode =>
+      s"receiving a $responseCode response with a single error containing a code" should {
+        "return a Left ResponseWrapper containing the extracted error code" in {
+          val httpResponse = HttpResponse(
+            responseCode,
+            singleErrorJson,
+            Map("CorrelationId" -> List(correlationId))
+          )
+
+          httpReads.read(method, url, httpResponse) shouldBe Left(
+            ResponseWrapper(
+              correlationId,
+              DownstreamErrors.single(DownstreamErrorCode("CODE"))
+            )
+          )
+        }
+      }
+
       s"receiving a $responseCode response with multiple errors containing top level error codes" should {
         "return a Left ResponseWrapper containing the extracted error codes" in {
           val httpResponse = HttpResponse(

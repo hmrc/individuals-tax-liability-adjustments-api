@@ -39,7 +39,7 @@ class RetrieveTaxLiabilityAdjustmentsSchemaSpec extends UnitSpec with ScalaCheck
       }
     }
 
-    "a badly formatted tax year is supplied" must {
+    "a badly formatted tax year is supplied" when {
       "the tax year format is invalid" must {
         "return a TaxYearFormatError" in {
           RetrieveTaxLiabilityAdjustmentsSchema.schemaFor("NotATaxYear") shouldBe Invalid(Seq(TaxYearFormatError))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import v1.retrieve.model.response.RetrieveTaxLiabilityAdjustmentsResponse
 
 case class Def1_RetrieveTaxLiabilityAdjustmentsResponse(
     submittedOn: Timestamp,
-    averagingAdjustmentsDecrease: Option[AveragingAdjustmentsDecrease],
-    carryBackLossesDecrease: Option[CarryBackLossesDecrease]
+    carryBackLossesDecrease: Option[CarryBackLossesDecrease],
+    averagingAdjustmentsDecrease: Option[AveragingAdjustmentsDecrease]
 ) extends RetrieveTaxLiabilityAdjustmentsResponse
 
 object Def1_RetrieveTaxLiabilityAdjustmentsResponse {

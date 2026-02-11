@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@
 package v1.retrieve
 
 import api.config.AppConfig
-import api.controllers.{AuthorisedController, EndpointLogContext, RequestContext, RequestHandler}
-import api.services.{EnrolmentsAuthService, MtdIdLookupService}
+import api.controllers.*
+import api.services.{AuditService, EnrolmentsAuthService, MtdIdLookupService}
 import api.utils.IdGenerator
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import api.routing.Version
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -30,6 +31,7 @@ class RetrieveTaxLiabilityAdjustmentsController @Inject() (val authService: Enro
                                                            val lookupService: MtdIdLookupService,
                                                            validatorFactory: RetrieveTaxLiabilityAdjustmentsValidatorFactory,
                                                            service: RetrieveTaxLiabilityAdjustmentsService,
+                                                           auditService: AuditService,
                                                            cc: ControllerComponents,
                                                            idGenerator: IdGenerator)(implicit ec: ExecutionContext, appConfig: AppConfig)
     extends AuthorisedController(cc) {
@@ -49,6 +51,14 @@ class RetrieveTaxLiabilityAdjustmentsController @Inject() (val authService: Enro
         RequestHandler
           .withValidator(validator)
           .withService(service.retrieveTaxLiabilityAdjustments)
+          .withAuditing(AuditHandler(
+            auditService,
+            auditType = "RetrieveTaxLiabilityAdjustments",
+            transactionName = "retrieve-tax-liability-adjustments",
+            apiVersion = Version(request),
+            params = Map("nino" -> nino, "taxYear" -> taxYear),
+            includeResponse = true
+          ))
           .withPlainJsonResult(OK)
 
       requestHandler.handleRequest()

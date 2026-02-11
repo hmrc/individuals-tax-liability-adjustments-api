@@ -18,25 +18,26 @@ package v1.retrieve
 
 import play.api.Configuration
 import play.api.mvc.Result
-import api.models.domain.{TaxYear, Nino}
-
+import api.models.domain.{Nino, TaxYear}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import api.controllers.{ControllerBaseSpec, ControllerTestRunner}
-import api.models.errors.{ErrorWrapper, NinoFormatError, RuleTaxYearNotSupportedError}
+import api.models.audit.*
+import api.routing.Version1
+import api.controllers.ControllerTestRunner
+import api.models.errors.{ErrorWrapper, NinoFormatError, RuleOutsideAmendmentWindowError}
 import api.models.outcomes.ResponseWrapper
+import play.api.libs.json.JsValue
 import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture
 import v1.retrieve.def1.model.request.Def1_RetrieveTaxLiabilityAdjustmentsRequestData
 import v1.retrieve.model.request.RetrieveTaxLiabilityAdjustmentsRequestData
 
 class RetrieveTaxLiabilityAdjustmentsControllerSpec
-    extends ControllerBaseSpec
-    with ControllerTestRunner
+    extends ControllerTestRunner
     with MockRetrieveTaxLiabilityAdjustmentsService
     with MockRetrieveTaxLiabilityAdjustmentsValidatorFactory
     with Def1_RetrieveTaxLiabilityAdjustmentsFixture {
 
-  private val taxYear = TaxYear.fromMtd("2026-27")
+  private val taxYear = "2026-27"
 
   "RetrieveTaxLiabilityAdjustmentsController" should {
     "return (OK) 200 status" when {
@@ -63,9 +64,9 @@ class RetrieveTaxLiabilityAdjustmentsControllerSpec
 
         MockRetrieveTaxLiabilityAdjustmentsService
           .retrieve(requestData)
-          .returns(Future.successful(Left(ErrorWrapper(correlationId, RuleTaxYearNotSupportedError))))
+          .returns(Future.successful(Left(ErrorWrapper(correlationId, RuleOutsideAmendmentWindowError))))
 
-        runErrorTest(RuleTaxYearNotSupportedError)
+        runErrorTest(RuleOutsideAmendmentWindowError)
       }
     }
   }
@@ -77,9 +78,25 @@ class RetrieveTaxLiabilityAdjustmentsControllerSpec
       lookupService = mockMtdIdLookupService,
       validatorFactory = mockRetrieveTaxLiabilityAdjustmentsValidatorFactory,
       service = mockRetrieveTaxLiabilityAdjustmentsService,
+      auditService = mockAuditService,
       cc = cc,
       idGenerator = mockIdGenerator
     )
+
+    protected def event(auditResponse: AuditResponse, maybeRequestBody: Option[JsValue]): AuditEvent[GenericAuditDetail] =
+      AuditEvent(
+        auditType = "DeleteTaxLiabilityAdjustments",
+        transactionName = "delete-tax-liability-adjustments",
+        detail = GenericAuditDetail(
+          userType = "Individual",
+          agentReferenceNumber = None,
+          versionNumber = Version1.name,
+          params = Map("nino" -> validNino, "taxYear" -> taxYear),
+          requestBody = maybeRequestBody,
+          `X-CorrelationId` = correlationId,
+          auditResponse = auditResponse
+        )
+      )
 
     MockedAppConfig.featureSwitchConfig.anyNumberOfTimes() returns Configuration(
       "supporting-agents-access-control.enabled" -> true
@@ -87,10 +104,10 @@ class RetrieveTaxLiabilityAdjustmentsControllerSpec
 
     MockedAppConfig.endpointAllowsSupportingAgents(controller.endpointName).anyNumberOfTimes() returns true
 
-    protected def callController(): Future[Result] = controller.retrieve(validNino, taxYear.asMtd)(fakeGetRequest)
+    protected def callController(): Future[Result] = controller.retrieve(validNino, taxYear)(fakeGetRequest)
 
     protected val requestData: RetrieveTaxLiabilityAdjustmentsRequestData =
-      Def1_RetrieveTaxLiabilityAdjustmentsRequestData(Nino(validNino), taxYear)
+      Def1_RetrieveTaxLiabilityAdjustmentsRequestData(Nino(validNino), TaxYear.fromMtd(taxYear))
 
   }
 

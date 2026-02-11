@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class RetrieveTaxLiabilityAdjustmentsService @Inject() (connector: RetrieveTaxLi
     "1117" -> TaxYearFormatError,
     "1216" -> InternalError,
     "5010" -> NotFoundError,
-    "4200" -> RuleOutsideAmendmentWindow,
+    "4200" -> RuleOutsideAmendmentWindowError,
     "5000" -> InternalError
   )
 

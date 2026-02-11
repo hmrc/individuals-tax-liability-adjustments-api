@@ -63,7 +63,7 @@ class RetrieveTaxLiabilityAdjustmentsServiceSpec extends ServiceSpec with Def1_R
           "1215" -> NinoFormatError,
           "1117" -> TaxYearFormatError,
           "1216" -> InternalError,
-          "4200" -> RuleOutsideAmendmentWindow,
+          "4200" -> RuleOutsideAmendmentWindowError,
           "5000" -> InternalError,
           "5010" -> NotFoundError
         )

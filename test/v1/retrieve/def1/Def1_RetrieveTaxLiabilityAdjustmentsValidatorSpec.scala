@@ -20,32 +20,37 @@ import api.models.domain.{Nino, TaxYear}
 import api.models.errors.{ErrorWrapper, NinoFormatError}
 import api.utils.UnitSpec
 import v1.retrieve.def1.model.request.Def1_RetrieveTaxLiabilityAdjustmentsRequestData
+import v1.retrieve.model.request.RetrieveTaxLiabilityAdjustmentsRequestData
 
 class Def1_RetrieveTaxLiabilityAdjustmentsValidatorSpec extends UnitSpec {
 
   private implicit val correlationId: String = "1234"
 
   private val validNino    = "AA123456A"
-  private val validTaxYear = "2025-26"
+  private val validTaxYear = "2026-27"
 
   private val parsedNino    = Nino(validNino)
   private val parsedTaxYear = TaxYear.fromMtd(validTaxYear)
 
-  private def validator(nino: String = validNino, taxYear: String = validTaxYear) =
-    new Def1_RetrieveTaxLiabilityAdjustmentsValidator(nino, taxYear)
+  private def validator(nino: String) =
+    new Def1_RetrieveTaxLiabilityAdjustmentsValidator(nino, validTaxYear).validateAndWrapResult()
 
   "validator" should {
     "return the parsed domain object" when {
       "given a valid request" in {
-        validator().validateAndWrapResult() shouldBe
-          Right(Def1_RetrieveTaxLiabilityAdjustmentsRequestData(parsedNino, parsedTaxYear))
+        val result: Either[ErrorWrapper, RetrieveTaxLiabilityAdjustmentsRequestData] =
+          validator(validNino)
+
+        result shouldBe Right(Def1_RetrieveTaxLiabilityAdjustmentsRequestData(parsedNino, parsedTaxYear))
       }
     }
 
-    "return a single error" when {
-      "given an invalid nino" in {
-        validator(nino = "invalidNino").validateAndWrapResult() shouldBe
-          Left(ErrorWrapper(correlationId, NinoFormatError))
+    "return NinoFormatError error" when {
+      "an invalid nino is supplied" in {
+        val result: Either[ErrorWrapper, RetrieveTaxLiabilityAdjustmentsRequestData] =
+          validator("A12344A")
+
+        result shouldBe Left(ErrorWrapper(correlationId, NinoFormatError))
       }
     }
   }

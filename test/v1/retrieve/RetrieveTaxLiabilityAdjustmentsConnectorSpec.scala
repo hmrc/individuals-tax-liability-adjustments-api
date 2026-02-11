@@ -16,49 +16,59 @@
 
 package v1.retrieve
 
-import api.connectors.ConnectorSpec
+import api.connectors.{ConnectorSpec, DownstreamOutcome}
 import uk.gov.hmrc.http.StringContextOps
 import v1.retrieve.def1.model.request.Def1_RetrieveTaxLiabilityAdjustmentsRequestData
 import v1.retrieve.model.request.RetrieveTaxLiabilityAdjustmentsRequestData
 import v1.retrieve.model.response.RetrieveTaxLiabilityAdjustmentsResponse
 import scala.concurrent.Future
 import api.models.domain.{Nino, TaxYear}
+import api.models.errors.{DownstreamErrorCode, DownstreamErrors}
 import api.models.outcomes.ResponseWrapper
 import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture
 
 class RetrieveTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec with Def1_RetrieveTaxLiabilityAdjustmentsFixture {
 
   private val nino          = "AA123456A"
-  private val taxYear       = "2026-27"
-  private val downstreamUrl = url"$baseUrl/itsd/adjustments/tax/$nino"
+  private val taxYear       = TaxYear.fromMtd("2026-27")
+  private val downstreamUrl = url"$baseUrl/itsd/adjustments/tax/$nino?taxYear=${taxYear.asTysDownstream}"
 
-  trait Test {
-    self: ConnectorTest =>
+  trait Test extends ConnectorTest {
 
     val connector: RetrieveTaxLiabilityAdjustmentsConnector =
       new RetrieveTaxLiabilityAdjustmentsConnector(http = mockHttpClient, appConfig = mockAppConfig)
 
+    val requestData: RetrieveTaxLiabilityAdjustmentsRequestData =
+      Def1_RetrieveTaxLiabilityAdjustmentsRequestData(Nino(nino), taxYear)
+
   }
 
-  "RetrieveTaxLiabilityAdjustmentsConnector" when {
-    "the request is made and data is returned" in new HipTest with Test {
-      private val requestParams = List(
-        "taxYear" -> "26-27"
-      )
+  "RetrieveTaxLiabilityAdjustmentsConnector" should {
+    "return a valid response" when {
+      "a valid request is made" in new HipTest with Test {
 
-      val requestData: RetrieveTaxLiabilityAdjustmentsRequestData =
-        Def1_RetrieveTaxLiabilityAdjustmentsRequestData(
-          Nino(nino),
-          TaxYear.fromMtd(taxYear)
+        willGet(url = downstreamUrl).returns(
+          Future.successful(Right(ResponseWrapper(correlationId, response)))
         )
 
-      willGet(url = downstreamUrl, parameters = requestParams).returns(
-        Future.successful(Right(ResponseWrapper(correlationId, response)))
-      )
+        await(connector.retrieveTaxLiabilityAdjustments(requestData)).shouldBe(
+          Right(ResponseWrapper(correlationId, response))
+        )
+      }
+    }
+    "return an error" when {
+      "downstream returns an error for a request" in new HipTest with Test {
 
-      await(connector.retrieveTaxLiabilityAdjustments(requestData)).shouldBe(
-        Right(ResponseWrapper(correlationId, response))
-      )
+        val outcome: Left[ResponseWrapper[DownstreamErrors], Nothing] =
+          Left(ResponseWrapper(correlationId, DownstreamErrors.single(DownstreamErrorCode("SOME_ERROR"))))
+
+        willGet(url = downstreamUrl).returns(Future.successful(outcome))
+
+        val result: DownstreamOutcome[RetrieveTaxLiabilityAdjustmentsResponse] =
+          await(connector.retrieveTaxLiabilityAdjustments(requestData))
+
+        result shouldBe outcome
+      }
     }
 
   }

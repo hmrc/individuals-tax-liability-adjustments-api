@@ -31,7 +31,7 @@ class RetrieveTaxLiabilityAdjustmentsValidatorFactorySpec extends UnitSpec {
   "RetrieveTaxLiabilityAdjustmentsValidatorFactory" when {
     "given a request corresponding to a Def1 schema" should {
       "return a Def1 validator" in {
-        validatorFor("2025-26") shouldBe a[Def1_RetrieveTaxLiabilityAdjustmentsValidator]
+        validatorFor("2026-27") shouldBe a[Def1_RetrieveTaxLiabilityAdjustmentsValidator]
       }
     }
 

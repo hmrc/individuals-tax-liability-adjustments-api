@@ -26,19 +26,19 @@ import v1.delete.model.request.DeleteTaxLiabilityAdjustmentsRequestData
 class Def1_DeleteTaxLiabilityAdjustmentsValidatorSpec extends UnitSpec with MockAppConfig {
   private implicit val correlationId: String = "1234"
   private val validNino                      = "AA123456A"
-  private val validTaxYear                   = "2020-21"
+  private val validTaxYear                   = "2026-27"
 
   private val parsedNino    = Nino(validNino)
   private val parsedTaxYear = TaxYear.fromMtd(validTaxYear)
 
-  private def validator(nino: String, taxYear: String) =
-    new Def1_DeleteTaxLiabilityAdjustmentsValidator(nino, taxYear).validateAndWrapResult()
+  private def validator(nino: String) =
+    new Def1_DeleteTaxLiabilityAdjustmentsValidator(nino, validTaxYear).validateAndWrapResult()
 
   "validator" should {
     "return the parsed domain object" when {
       "a valid request is supplied" in {
         val result: Either[ErrorWrapper, DeleteTaxLiabilityAdjustmentsRequestData] =
-          validator(validNino, validTaxYear)
+          validator(validNino)
 
         result shouldBe Right(Def1_DeleteTaxLiabilityAdjustmentsRequestData(parsedNino, parsedTaxYear))
 
@@ -48,7 +48,7 @@ class Def1_DeleteTaxLiabilityAdjustmentsValidatorSpec extends UnitSpec with Mock
     "return NinoFormatError error" when {
       "an invalid nino is supplied" in {
         val result: Either[ErrorWrapper, DeleteTaxLiabilityAdjustmentsRequestData] =
-          validator("A12344A", validTaxYear)
+          validator("A12344A")
 
         result shouldBe Left(ErrorWrapper(correlationId, NinoFormatError))
       }

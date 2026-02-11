@@ -25,6 +25,7 @@ import play.api.libs.ws.{WSRequest, WSResponse}
 import play.api.test.Helpers.AUTHORIZATION
 import api.models.errors.*
 import api.services.{AuditStub, AuthStub, DownstreamStub, MtdIdLookupStub}
+import play.api.libs.ws.DefaultBodyReadables.readableAsString
 
 class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
 
@@ -57,6 +58,9 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
 
         val response: WSResponse = await(request().delete())
         response.status shouldBe NO_CONTENT
+        response.body shouldBe ""
+        response.header("Content-Type") shouldBe None
+        response.header("X-CorrelationId").nonEmpty shouldBe true
       }
     }
 
@@ -77,6 +81,8 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
 
               val response: WSResponse = await(request().delete())
               response.status shouldBe expectedStatus
+              response.json shouldBe Json.toJson(expectedBody)
+              response.header("Content-Type") shouldBe Some("application/json")
             }
           }
 
@@ -84,8 +90,7 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
             ("AA1123A", "2026-27", BAD_REQUEST, NinoFormatError),
             ("AA123456A", "invalid", BAD_REQUEST, TaxYearFormatError),
             ("AA123456A", "2025-27", BAD_REQUEST, RuleTaxYearRangeInvalidError),
-            ("AA123456A", "2025-26", BAD_REQUEST, RuleTaxYearNotSupportedError),
-            ("AA123456A", "2024-25", BAD_REQUEST, RuleOutsideAmendmentWindow)
+            ("AA123456A", "2025-26", BAD_REQUEST, RuleTaxYearNotSupportedError)
           )
 
           input.foreach(validationErrorTest.tupled)
@@ -105,6 +110,7 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
             val response: WSResponse = await(request().delete())
             response.json shouldBe Json.toJson(expectedBody)
             response.status shouldBe expectedStatus
+            response.header("Content-Type") shouldBe Some("application/json")
           }
         }
 
@@ -114,7 +120,7 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
           (BAD_REQUEST, "1216", INTERNAL_SERVER_ERROR, InternalError),
           (BAD_REQUEST, "UNMATCHED_STUB_ERROR", BAD_REQUEST, RuleIncorrectGovTestScenarioError),
           (NOT_FOUND, "5010", NOT_FOUND, NotFoundError),
-          (UNPROCESSABLE_ENTITY, "4200", BAD_REQUEST, RuleOutsideAmendmentWindow),
+          (UNPROCESSABLE_ENTITY, "4200", BAD_REQUEST, RuleOutsideAmendmentWindowError),
           (NOT_IMPLEMENTED, "5000", INTERNAL_SERVER_ERROR, InternalError)
         )
 

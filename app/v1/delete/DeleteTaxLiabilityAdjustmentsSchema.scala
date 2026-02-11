@@ -27,8 +27,7 @@ object DeleteTaxLiabilityAdjustmentsSchema {
 
   case object Def1 extends DeleteTaxLiabilityAdjustmentsSchema
 
-  val schema: DeleteTaxLiabilityAdjustmentsSchema = Def1
-
   def schemaFor(taxYear: String): Validated[Seq[MtdError], DeleteTaxLiabilityAdjustmentsSchema] =
     ResolveDetailedTaxYear(TaxYear.fromMtd("2026-27")).apply(taxYear).map(_ => Def1)
+
 }

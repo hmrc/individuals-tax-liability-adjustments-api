@@ -16,19 +16,15 @@
 
 package v1.delete
 
-import cats.implicits.catsSyntaxValidatedId
 import play.api.Configuration
 import play.api.libs.json.JsValue
 import play.api.mvc.Result
-import api.config.Deprecation.NotDeprecated
-import api.config.MockAppConfig
-import api.controllers.{ControllerBaseSpec, ControllerTestRunner}
+import api.controllers.ControllerTestRunner
 import api.models.audit.*
 import api.models.domain.TaxYear
 import api.models.errors.*
 import api.models.outcomes.ResponseWrapper
 import api.routing.Version1
-import api.services.MockAuditService
 import v1.delete.def1.model.request.Def1_DeleteTaxLiabilityAdjustmentsRequestData
 import v1.delete.model.request.DeleteTaxLiabilityAdjustmentsRequestData
 
@@ -36,12 +32,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class DeleteTaxLiabilityAdjustmentsControllerSpec
-    extends ControllerBaseSpec
-    with ControllerTestRunner
-    with MockAppConfig
+    extends ControllerTestRunner
     with MockDeleteTaxLiabilityAdjustmentsService
-    with MockDeleteTaxLiabilityAdjustmentsValidatorFactory
-    with MockAuditService {
+    with MockDeleteTaxLiabilityAdjustmentsValidatorFactory {
 
   private val taxYear = "2026-27"
 
@@ -72,9 +65,9 @@ class DeleteTaxLiabilityAdjustmentsControllerSpec
 
         MockDeleteTaxLiabilityAdjustmentsService
           .delete(requestData)
-          .returns(Future.successful(Left(ErrorWrapper(correlationId, RuleTaxYearNotSupportedError, None))))
+          .returns(Future.successful(Left(ErrorWrapper(correlationId, RuleOutsideAmendmentWindowError, None))))
 
-        runErrorTestWithAudit(RuleTaxYearNotSupportedError)
+        runErrorTestWithAudit(RuleOutsideAmendmentWindowError)
       }
     }
   }
@@ -85,7 +78,7 @@ class DeleteTaxLiabilityAdjustmentsControllerSpec
       authService = mockEnrolmentsAuthService,
       lookupService = mockMtdIdLookupService,
       service = mockDeleteTaxLiabilityAdjustmentsService,
-      validatorFactory = mockDeleteLossesAndClaimsValidatorFactory,
+      validatorFactory = mockDeleteTaxLiabilityAdjustmentsValidatorFactory,
       auditService = mockAuditService,
       cc = cc,
       idGenerator = mockIdGenerator
@@ -108,13 +101,11 @@ class DeleteTaxLiabilityAdjustmentsControllerSpec
         )
       )
 
-    MockedAppConfig.deprecationFor(Version1).returns(NotDeprecated.valid).anyNumberOfTimes()
-
     MockedAppConfig.featureSwitchConfig.anyNumberOfTimes() returns Configuration(
       "supporting-agents-access-control.enabled" -> true
     )
 
-    MockedAppConfig.endpointAllowsSupportingAgents(controller.endpointName).anyNumberOfTimes() returns false
+    MockedAppConfig.endpointAllowsSupportingAgents(controller.endpointName).anyNumberOfTimes() returns true
 
   }
 

@@ -22,11 +22,11 @@ import v1.delete.model.request.DeleteTaxLiabilityAdjustmentsRequestData
 
 trait MockDeleteTaxLiabilityAdjustmentsValidatorFactory extends MockValidatorFactory[DeleteTaxLiabilityAdjustmentsRequestData] {
 
-  val mockDeleteLossesAndClaimsValidatorFactory: DeleteTaxLiabilityAdjustmentsValidatorFactory =
+  val mockDeleteTaxLiabilityAdjustmentsValidatorFactory: DeleteTaxLiabilityAdjustmentsValidatorFactory =
     mock[DeleteTaxLiabilityAdjustmentsValidatorFactory]
 
   def validator(): CallHandler[Validator[DeleteTaxLiabilityAdjustmentsRequestData]] = {
-    (mockDeleteLossesAndClaimsValidatorFactory.validator(_: String, _: String)).expects(*, *)
+    (mockDeleteTaxLiabilityAdjustmentsValidatorFactory.validator(_: String, _: String)).expects(*, *)
   }
 
 }

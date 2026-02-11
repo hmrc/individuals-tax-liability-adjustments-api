@@ -36,14 +36,12 @@ class DeleteTaxLiabilityAdjustmentsServiceSpec extends ServiceSpec {
 
   lazy val request: DeleteTaxLiabilityAdjustmentsRequestData = Def1_DeleteTaxLiabilityAdjustmentsRequestData(Nino(nino), TaxYear.fromMtd(taxYear))
 
-  "Delete Tax Liability Adjustments" should {
+  "deleteTaxLiabilityAdjustments" should {
     "return a Right" when {
       "the connector call is successful" in new Test {
-        val downstreamResponse: ResponseWrapper[Unit] = ResponseWrapper(correlationId, ())
-        val expected: ResponseWrapper[Unit]           = ResponseWrapper(correlationId, ())
-        MockDeleteTaxLiabilityAdjustmentsConnector.deleteTaxLiabilityAdjustments(request).returns(Future.successful(Right(downstreamResponse)))
-
-        await(service.deleteTaxLiabilityAdjustments(request)) shouldBe Right(expected)
+        val response: ResponseWrapper[Unit] = ResponseWrapper(correlationId, ())
+        MockDeleteTaxLiabilityAdjustmentsConnector.deleteTaxLiabilityAdjustments(request).returns(Future.successful(Right(response)))
+        await(service.deleteTaxLiabilityAdjustments(request)) shouldBe Right(response)
       }
     }
 
@@ -72,9 +70,10 @@ class DeleteTaxLiabilityAdjustmentsServiceSpec extends ServiceSpec {
         "1215" -> NinoFormatError,
         "1117" -> TaxYearFormatError,
         "1216" -> InternalError,
-        "4200" -> RuleOutsideAmendmentWindow,
+        "4200" -> RuleOutsideAmendmentWindowError,
         "5000" -> InternalError,
-        "5010" -> NotFoundError
+        "5010" -> NotFoundError,
+        ("UNMATCHED_STUB_ERROR", RuleIncorrectGovTestScenarioError)
       )
       errors.foreach(serviceError.tupled)
     }

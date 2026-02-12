@@ -85,8 +85,8 @@ class RetrieveTaxLiabilityAdjustmentsControllerSpec
 
     protected def event(auditResponse: AuditResponse, maybeRequestBody: Option[JsValue]): AuditEvent[GenericAuditDetail] =
       AuditEvent(
-        auditType = "DeleteTaxLiabilityAdjustments",
-        transactionName = "delete-tax-liability-adjustments",
+        auditType = "RetrieveTaxLiabilityAdjustments",
+        transactionName = "retrieve-tax-liability-adjustments",
         detail = GenericAuditDetail(
           userType = "Individual",
           agentReferenceNumber = None,

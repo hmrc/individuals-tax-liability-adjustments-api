@@ -1,6 +1,6 @@
-summary: Delete Tax Liability Adjustments
+summary: Retrieve Tax Liability Adjustments
 description: |
-  This endpoint allows a developer to delete tax liability adjustments for a specified individual for a given tax year.
+  This endpoint allows a developer to retrieve tax liability adjustments for a specified individual for a given tax year.
   A National Insurance number and tax year are required.
 
   ###  Test data
@@ -10,8 +10,7 @@ description: |
   |----------------------------------|------------------------------------------------------------------|
   | N/A - DEFAULT                    | Simulates success response.                                      |
   | NOT_FOUND                        | Simulates the scenario where no data is found.                   |
-  | OUTSIDE_AMENDMENT_WINDOW         | Simulates the scenario where request cannot be completed as it is outside the amendment window. |
-  | STATEFUL                         | Performs a stateful delete.                                      |
+  | STATEFUL                         | Performs a stateful retrieve.                                    |
 
 parameters:
   - $ref: './common/pathParameters.yaml#/components/parameters/nino'
@@ -22,14 +21,20 @@ parameters:
 
 security:
   - User-Restricted:
-      - write:self-assessment
+      - read:self-assessment
 
 responses:
-  "204":
-    description: Success (No Content)
+  "200":
+    description: Success
     headers:
       X-CorrelationId:
         $ref: './common/headers.yaml#/components/parameters/correlationId'
+    content:
+      application/json:
+        schema:
+          $ref: './schemas/tax_liability_adjustments_retrieve/def1/response.json'
+        example:
+          $ref: './examples/tax_liability_adjustments_retrieve/def1/response.json'
 
   "400":
     description: Bad request
@@ -51,8 +56,6 @@ responses:
             $ref: './common/errors.yaml#/components/examples/ruleTaxYearRangeInvalid'
           RULE_INCORRECT_GOV_TEST_SCENARIO:
             $ref: './common/errors.yaml#/components/examples/ruleIncorrectGovTestScenario'
-          RULE_OUTSIDE_AMENDMENT_WINDOW:
-            $ref: './common/errors.yaml#/components/examples/ruleOutsideAmendmentWindow'
 
   "403":
     description: Forbidden

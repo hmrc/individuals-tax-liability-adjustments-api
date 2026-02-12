@@ -55,3 +55,5 @@ tags:
 paths:
   /individuals/tax-liability/adjustments/hello-world:
     $ref: "./hello_world_retrieve.yaml"
+  /individuals/tax-liability/adjustments/{nino}/{taxYear}:
+    $ref: "./tax_liability_adjustments_delete.yaml"

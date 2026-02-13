@@ -22,27 +22,23 @@ import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.carryB
 
 class CarryBackLossesDecreaseSpec extends UnitSpec {
 
+  val json: JsObject = Json.obj(
+    "incomeTax"       -> 5000.99,
+    "class4"          -> 5000.99,
+    "capitalGainsTax" -> 5000.99
+  )
+
   "CarryBackLossesDecrease" when {
 
     "read from JSON" should {
       "return the parsed object" in {
-        val json = Json.obj(
-          "incomeTax"       -> 5000.99,
-          "class4"          -> 5000.99,
-          "capitalGainsTax" -> 5000.99
-        )
-
         json.as[CarryBackLossesDecrease] shouldBe carryBackLossesDecrease
       }
     }
 
     "written to JSON" should {
       "produce the expected JSON" in {
-        Json.toJson(carryBackLossesDecrease) shouldBe Json.obj(
-          "incomeTax"       -> 5000.99,
-          "class4"          -> 5000.99,
-          "capitalGainsTax" -> 5000.99
-        )
+        Json.toJson(carryBackLossesDecrease) shouldBe json
       }
     }
 

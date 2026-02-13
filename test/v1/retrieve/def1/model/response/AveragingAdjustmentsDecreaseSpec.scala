@@ -22,15 +22,16 @@ import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.averag
 
 class AveragingAdjustmentsDecreaseSpec extends UnitSpec {
 
+  val json: JsObject = Json.obj(
+    "incomeTax"       -> 5000.99,
+    "class4"          -> 5000.99,
+    "capitalGainsTax" -> 5000.99
+  )
+
   "AveragingAdjustmentsDecrease" when {
 
     "read from JSON" should {
       "return the parsed object" in {
-        val json = Json.obj(
-          "incomeTax"       -> 5000.99,
-          "class4"          -> 5000.99,
-          "capitalGainsTax" -> 5000.99
-        )
 
         json.as[AveragingAdjustmentsDecrease] shouldBe averagingAdjustmentsDecrease
       }
@@ -38,11 +39,7 @@ class AveragingAdjustmentsDecreaseSpec extends UnitSpec {
 
     "written to JSON" should {
       "produce the expected JSON" in {
-        Json.toJson(averagingAdjustmentsDecrease) shouldBe Json.obj(
-          "incomeTax"       -> 5000.99,
-          "class4"          -> 5000.99,
-          "capitalGainsTax" -> 5000.99
-        )
+        Json.toJson(averagingAdjustmentsDecrease) shouldBe json
       }
     }
 

@@ -50,9 +50,4 @@ components:
 
 paths:
   /individuals/tax-liability/adjustments/{nino}/{taxYear}:
-    put:
-      $ref: "./tax_liability_adjustments_create_or_amend.yaml"
-    get:
-      $ref: "./tax_liability_adjustments_retrieve.yaml"
-    delete:
-      $ref: "./tax_liability_adjustments_delete.yaml"
+    $ref: "./tax_liability_adjustments.yaml"

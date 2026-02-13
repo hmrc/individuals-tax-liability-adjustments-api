@@ -1,16 +1,18 @@
-summary: Retrieve Tax Liability Adjustments
+summary: Create or Amend Tax Liability Adjustments
 description: |
-  This endpoint allows a developer to retrieve tax liability adjustments for a specified individual for a given tax year.
+  This endpoint allows a developer to create or amend tax liability adjustments for a specified individual for a given tax year.
   A National Insurance number and tax year are required.
+  
+  **Note:** When submitting adjustments for carry-back losses, the corresponding carry-back losses must also be submitted using the Create or Amend Losses and Claims endpoint in the [Individual Losses API](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/individual-losses-api) before the final declaration.
 
   ###  Test data
   Scenario simulation using Gov-Test-Scenario headers is only available in the sandbox environment.
 
-  | Header Value (Gov-Test-Scenario) | Scenario                                                         |
-  |----------------------------------|------------------------------------------------------------------|
-  | N/A - DEFAULT                    | Simulates success response.                                      |
-  | NOT_FOUND                        | Simulates the scenario where no data is found.                   |
-  | STATEFUL                         | Performs a stateful retrieve.                                    |
+  | Header Value (Gov-Test-Scenario) | Scenario                                                                                        |
+  |----------------------------------|-------------------------------------------------------------------------------------------------|
+  | N/A - DEFAULT                    | Simulates success response.                                                                     |
+  | OUTSIDE_AMENDMENT_WINDOW         | Simulates the scenario where request cannot be completed as it is outside the amendment window. |
+  | STATEFUL                         | Performs a stateful create or update.                                                           |
 
 parameters:
   - $ref: './common/pathParameters.yaml#/components/parameters/nino'
@@ -21,11 +23,19 @@ parameters:
 
 security:
   - User-Restricted:
-      - read:self-assessment
+      - write:self-assessment
+
+requestBody:
+  content:
+    application/json:
+      schema:
+        $ref: './schemas/tax_liability_adjustments_create_or_amend/def1/request.json'
+      example:
+        $ref: './examples/tax_liability_adjustments_create_or_amend/def1/request.json'
 
 responses:
-  "200":
-    description: Success
+  "204":
+    description: Success (No Content)
     headers:
       X-CorrelationId:
         $ref: './common/headers.yaml#/components/parameters/correlationId'
@@ -35,12 +45,6 @@ responses:
         $ref: './common/headers.yaml#/components/parameters/sunsetHeader'
       Link:
         $ref: './common/headers.yaml#/components/parameters/linkHeader'
-    content:
-      application/json:
-        schema:
-          $ref: './schemas/tax_liability_adjustments_retrieve/def1/response.json'
-        example:
-          $ref: './examples/tax_liability_adjustments_retrieve/def1/response.json'
 
   "400":
     description: Bad request
@@ -68,6 +72,14 @@ responses:
             $ref: './common/errors.yaml#/components/examples/ruleTaxYearRangeInvalid'
           RULE_INCORRECT_GOV_TEST_SCENARIO:
             $ref: './common/errors.yaml#/components/examples/ruleIncorrectGovTestScenario'
+          RULE_TAX_YEAR_NOT_ENDED:
+            $ref: './common/errors.yaml#/components/examples/ruleTaxYearNotEnded'
+          FORMAT_VALUE:
+            $ref: './common/errors.yaml#/components/examples/formatValue'
+          RULE_INCORRECT_OR_EMPTY_BODY_SUBMITTED:
+            $ref: './common/errors.yaml#/components/examples/ruleIncorrectOrEmptyBody'
+          RULE_OUTSIDE_AMENDMENT_WINDOW:
+            $ref: './common/errors.yaml#/components/examples/ruleOutsideAmendmentWindow'
 
   "403":
     description: Forbidden
@@ -87,22 +99,3 @@ responses:
         examples:
           CLIENT_OR_AGENT_NOT_AUTHORISED:
             $ref: './common/errors.yaml#/components/examples/clientOrAgentNotAuthorised'
-
-  "404":
-    description: Not Found
-    headers:
-      X-CorrelationId:
-        $ref: './common/headers.yaml#/components/parameters/correlationId'
-      Deprecation:
-        $ref: './common/headers.yaml#/components/parameters/deprecationHeader'
-      Sunset:
-        $ref: './common/headers.yaml#/components/parameters/sunsetHeader'
-      Link:
-        $ref: './common/headers.yaml#/components/parameters/linkHeader'
-    content:
-      application/json:
-        schema:
-          $ref: './schemas/error_response.yaml'
-        examples:
-          MATCHING_RESOURCE_NOT_FOUND:
-            $ref: './common/errors.yaml#/components/examples/notFound'

@@ -67,12 +67,12 @@ class DeleteTaxLiabilityAdjustmentsServiceSpec extends ServiceSpec {
         }
 
       val errors: Seq[(String, MtdError)] = List(
-        "1215"                 -> NinoFormatError,
-        "1117"                 -> TaxYearFormatError,
-        "1216"                 -> InternalError,
-        "4200"                 -> RuleOutsideAmendmentWindowError,
-        "5000"                 -> InternalError,
-        "5010"                 -> NotFoundError
+        "1215" -> NinoFormatError,
+        "1117" -> TaxYearFormatError,
+        "1216" -> InternalError,
+        "4200" -> RuleOutsideAmendmentWindowError,
+        "5000" -> InternalError,
+        "5010" -> NotFoundError
       )
       errors.foreach(serviceError.tupled)
     }

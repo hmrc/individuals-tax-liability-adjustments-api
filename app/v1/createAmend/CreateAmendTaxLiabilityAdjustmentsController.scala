@@ -62,7 +62,7 @@ class CreateAmendTaxLiabilityAdjustmentsController @Inject(
             apiVersion = Version(request),
             params = Map("nino" -> nino, "taxYear" -> taxYear)
           ))
-          .withNoContentResult(OK)
+          .withNoContentResult(NO_CONTENT)
 
       requestHandler.handleRequest()
     }

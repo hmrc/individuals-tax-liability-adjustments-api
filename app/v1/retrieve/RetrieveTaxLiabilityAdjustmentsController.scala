@@ -18,11 +18,9 @@ package v1.retrieve
 
 import api.config.AppConfig
 import api.controllers.*
-import api.services.{AuditService, EnrolmentsAuthService, MtdIdLookupService}
+import api.services.{EnrolmentsAuthService, MtdIdLookupService}
 import api.utils.IdGenerator
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import api.routing.Version
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
@@ -31,7 +29,6 @@ class RetrieveTaxLiabilityAdjustmentsController @Inject() (val authService: Enro
                                                            val lookupService: MtdIdLookupService,
                                                            validatorFactory: RetrieveTaxLiabilityAdjustmentsValidatorFactory,
                                                            service: RetrieveTaxLiabilityAdjustmentsService,
-                                                           auditService: AuditService,
                                                            cc: ControllerComponents,
                                                            idGenerator: IdGenerator)(implicit ec: ExecutionContext, appConfig: AppConfig)
     extends AuthorisedController(cc) {
@@ -51,16 +48,7 @@ class RetrieveTaxLiabilityAdjustmentsController @Inject() (val authService: Enro
         RequestHandler
           .withValidator(validator)
           .withService(service.retrieveTaxLiabilityAdjustments)
-          .withAuditing(AuditHandler(
-            auditService,
-            auditType = "RetrieveTaxLiabilityAdjustments",
-            transactionName = "retrieve-tax-liability-adjustments",
-            apiVersion = Version(request),
-            params = Map("nino" -> nino, "taxYear" -> taxYear),
-            includeResponse = true
-          ))
-          .withPlainJsonResult(OK)
-
+          .withPlainJsonResult()
       requestHandler.handleRequest()
     }
 

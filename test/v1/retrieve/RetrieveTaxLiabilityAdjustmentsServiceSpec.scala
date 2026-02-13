@@ -22,16 +22,14 @@ import api.models.outcomes.ResponseWrapper
 import api.services.ServiceSpec
 import v1.retrieve.def1.model.request.Def1_RetrieveTaxLiabilityAdjustmentsRequestData
 import v1.retrieve.model.request.RetrieveTaxLiabilityAdjustmentsRequestData
-import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture
+import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.response
 
 import scala.concurrent.Future
 
-class RetrieveTaxLiabilityAdjustmentsServiceSpec extends ServiceSpec with Def1_RetrieveTaxLiabilityAdjustmentsFixture {
-
-  implicit override val correlationId: String = "X-123"
+class RetrieveTaxLiabilityAdjustmentsServiceSpec extends ServiceSpec {
 
   "RetrieveTaxLiabilityAdjustmentsService" should {
-    "return a successful call from downstream" when {
+    "return correct result for a success" when {
       "using schema Def1" in new Test {
         MockRetrieveTaxLiabilityAdjustmentsConnector
           .retrieveTaxLiabilityAdjustments(requestData)
@@ -45,42 +43,41 @@ class RetrieveTaxLiabilityAdjustmentsServiceSpec extends ServiceSpec with Def1_R
       }
     }
 
-    "return an unsuccessful response from downstream" when {
-      "map errors according to spec" should {
+    "map errors according to spec" when {
 
-        def serviceError(downStreamErrorCode: String, error: MtdError): Unit =
-          s"a $downStreamErrorCode error is returned from the service" in new Test {
-            MockRetrieveTaxLiabilityAdjustmentsConnector
-              .retrieveTaxLiabilityAdjustments(requestData)
-              .returns(
-                Future.successful(Left(ResponseWrapper(correlationId, DownstreamErrors.single(DownstreamErrorCode(downStreamErrorCode)))))
-              )
+      def serviceError(downStreamErrorCode: String, error: MtdError): Unit =
+        s"a $downStreamErrorCode error is returned from the service" in new Test {
+          MockRetrieveTaxLiabilityAdjustmentsConnector
+            .retrieveTaxLiabilityAdjustments(requestData)
+            .returns(
+              Future.successful(Left(ResponseWrapper(correlationId, DownstreamErrors.single(DownstreamErrorCode(downStreamErrorCode)))))
+            )
 
-            await(service.retrieveTaxLiabilityAdjustments(requestData)) shouldBe Left(ErrorWrapper(correlationId, error))
-          }
+          await(service.retrieveTaxLiabilityAdjustments(requestData)) shouldBe Left(ErrorWrapper(correlationId, error))
+        }
 
-        val errorMap = List(
-          "1215" -> NinoFormatError,
-          "1117" -> TaxYearFormatError,
-          "1216" -> InternalError,
-          "4200" -> RuleOutsideAmendmentWindowError,
-          "5000" -> InternalError,
-          "5010" -> NotFoundError
-        )
+      val errorMap = List(
+        "1215" -> NinoFormatError,
+        "1117" -> TaxYearFormatError,
+        "1216" -> InternalError,
+        "5000" -> InternalError,
+        "5010" -> NotFoundError
+      )
 
-        errorMap.foreach(args => serviceError.tupled(args))
-      }
+      errorMap.foreach(args => serviceError.tupled(args))
     }
 
-    trait Test extends MockRetrieveTaxLiabilityAdjustmentsConnector {
-      val service = new RetrieveTaxLiabilityAdjustmentsService(mockConnector)
+  }
 
-      val requestData: RetrieveTaxLiabilityAdjustmentsRequestData =
-        Def1_RetrieveTaxLiabilityAdjustmentsRequestData(
-          Nino("AA123456A"),
-          TaxYear.fromMtd("2026-27")
-        )
-    }
+  trait Test extends MockRetrieveTaxLiabilityAdjustmentsConnector {
+    val service = new RetrieveTaxLiabilityAdjustmentsService(mockConnector)
+
+    val requestData: RetrieveTaxLiabilityAdjustmentsRequestData =
+      Def1_RetrieveTaxLiabilityAdjustmentsRequestData(
+        Nino("AA123456A"),
+        TaxYear.fromMtd("2026-27")
+      )
+
   }
 
 }

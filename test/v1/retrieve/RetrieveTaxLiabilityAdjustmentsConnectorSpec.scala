@@ -25,9 +25,9 @@ import scala.concurrent.Future
 import api.models.domain.{Nino, TaxYear}
 import api.models.errors.{DownstreamErrorCode, DownstreamErrors}
 import api.models.outcomes.ResponseWrapper
-import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture
+import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.response
 
-class RetrieveTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec with Def1_RetrieveTaxLiabilityAdjustmentsFixture {
+class RetrieveTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
 
   private val nino          = "AA123456A"
   private val taxYear       = TaxYear.fromMtd("2026-27")

@@ -18,40 +18,32 @@ package v1.retrieve.def1.model.response
 
 import api.utils.UnitSpec
 import play.api.libs.json.*
-import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture
+import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.averagingAdjustmentsDecrease
 
-class AveragingAdjustmentsDecreaseSpec extends UnitSpec with Def1_RetrieveTaxLiabilityAdjustmentsFixture {
+class AveragingAdjustmentsDecreaseSpec extends UnitSpec {
 
-  "AveragingAdjustmentsDecrease" should {
+  "AveragingAdjustmentsDecrease" when {
 
-    "serialize to JSON correctly" in {
-      val json = Json.toJson(averagingAdjustmentsDecrease)
+    "read from JSON" should {
+      "return the parsed object" in {
+        val json = Json.obj(
+          "incomeTax"       -> 5000.99,
+          "class4"          -> 5000.99,
+          "capitalGainsTax" -> 5000.99
+        )
 
-      json shouldBe Json.obj(
-        "incomeTax"       -> 5000.99,
-        "class4"          -> 5000.99,
-        "capitalGainsTax" -> 5000.99
-      )
+        json.as[AveragingAdjustmentsDecrease] shouldBe averagingAdjustmentsDecrease
+      }
     }
 
-    "deserialize from JSON correctly" in {
-      val json = Json.obj(
-        "incomeTax"       -> 5000.99,
-        "class4"          -> 5000.99,
-        "capitalGainsTax" -> 5000.99
-      )
-
-      val result = json.validate[AveragingAdjustmentsDecrease]
-
-      result.isSuccess shouldBe true
-      result.get shouldBe averagingAdjustmentsDecrease
-    }
-
-    "round-trip serialize and deserialize" in {
-      val json   = Json.toJson(averagingAdjustmentsDecrease)
-      val parsed = json.as[AveragingAdjustmentsDecrease]
-
-      parsed shouldBe averagingAdjustmentsDecrease
+    "written to JSON" should {
+      "produce the expected JSON" in {
+        Json.toJson(averagingAdjustmentsDecrease) shouldBe Json.obj(
+          "incomeTax"       -> 5000.99,
+          "class4"          -> 5000.99,
+          "capitalGainsTax" -> 5000.99
+        )
+      }
     }
 
   }

@@ -18,40 +18,32 @@ package v1.retrieve.def1.model.response
 
 import api.utils.UnitSpec
 import play.api.libs.json.*
-import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture
+import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.carryBackLossesDecrease
 
-class CarryBackLossesDecreaseSpec extends UnitSpec with Def1_RetrieveTaxLiabilityAdjustmentsFixture {
+class CarryBackLossesDecreaseSpec extends UnitSpec {
 
-  "CarryBackLossesDecrease" should {
+  "CarryBackLossesDecrease" when {
 
-    "serialize to JSON correctly" in {
-      val json = Json.toJson(carryBackLossesDecrease)
+    "read from JSON" should {
+      "return the parsed object" in {
+        val json = Json.obj(
+          "incomeTax"       -> 5000.99,
+          "class4"          -> 5000.99,
+          "capitalGainsTax" -> 5000.99
+        )
 
-      json shouldBe Json.obj(
-        "incomeTax"       -> 5000.99,
-        "class4"          -> 5000.99,
-        "capitalGainsTax" -> 5000.99
-      )
+        json.as[CarryBackLossesDecrease] shouldBe carryBackLossesDecrease
+      }
     }
 
-    "deserialize from JSON correctly" in {
-      val json = Json.obj(
-        "incomeTax"       -> 5000.99,
-        "class4"          -> 5000.99,
-        "capitalGainsTax" -> 5000.99
-      )
-
-      val result = json.validate[CarryBackLossesDecrease]
-
-      result.isSuccess shouldBe true
-      result.get shouldBe carryBackLossesDecrease
-    }
-
-    "round-trip serialize and deserialize" in {
-      val json   = Json.toJson(carryBackLossesDecrease)
-      val parsed = json.as[CarryBackLossesDecrease]
-
-      parsed shouldBe carryBackLossesDecrease
+    "written to JSON" should {
+      "produce the expected JSON" in {
+        Json.toJson(carryBackLossesDecrease) shouldBe Json.obj(
+          "incomeTax"       -> 5000.99,
+          "class4"          -> 5000.99,
+          "capitalGainsTax" -> 5000.99
+        )
+      }
     }
 
   }

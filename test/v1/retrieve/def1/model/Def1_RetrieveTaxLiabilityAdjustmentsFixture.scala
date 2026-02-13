@@ -21,27 +21,9 @@ import play.api.libs.json.{JsValue, Json}
 import v1.retrieve.def1.model.response.{AveragingAdjustmentsDecrease, CarryBackLossesDecrease, Def1_RetrieveTaxLiabilityAdjustmentsResponse}
 import v1.retrieve.model.response.RetrieveTaxLiabilityAdjustmentsResponse
 
-trait Def1_RetrieveTaxLiabilityAdjustmentsFixture {
+object Def1_RetrieveTaxLiabilityAdjustmentsFixture {
 
-  val fullDownstreamJson: JsValue = Json.parse(
-    """
-      |{
-      |  "submittedOn": "2026-08-24T14:15:22.544Z",
-      |  "carryBackLossesDecrease": {
-      |    "incomeTax": 5000.99,
-      |    "class4": 5000.99,
-      |    "capitalGainsTax": 5000.99
-      |  },
-      |  "averagingAdjustmentsDecrease": {
-      |    "incomeTax": 5000.99,
-      |    "class4": 5000.99,
-      |    "capitalGainsTax": 5000.99
-      |  }
-      |}
-    """.stripMargin
-  )
-
-  val fullMtdJson: JsValue = Json.parse(
+  val responseJson: JsValue = Json.parse(
     """
       |{
       |  "submittedOn": "2026-08-24T14:15:22.544Z",

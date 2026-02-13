@@ -19,27 +19,22 @@ package v1.retrieve
 import api.services.{AuditStub, AuthStub, DownstreamStub, MtdIdLookupStub}
 import api.models.errors.*
 import api.support.IntegrationBaseSpec
-import play.api.http.HeaderNames.ACCEPT
-import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
-import play.api.test.Helpers.AUTHORIZATION
-import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture
+import play.api.test.Helpers.*
+import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.responseJson
 
-class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec with Def1_RetrieveTaxLiabilityAdjustmentsFixture {
+class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
 
   private trait Test {
 
     val nino: String          = "AA123456A"
     def taxYear: String       = "2026-27"
-    val responseBody: JsValue = fullMtdJson
+    val responseBody: JsValue = responseJson
 
     val queryParams: Map[String, String] = Map("taxYear" -> "26-27")
 
     def downstreamUri: String = s"/itsd/adjustments/tax/$nino"
-
-    def stubDownstreamSuccess(): Unit =
-      DownstreamStub.onSuccess(DownstreamStub.GET, downstreamUri, queryParams, status = OK, body = fullDownstreamJson)
 
     def request(): WSRequest = {
       AuditStub.audit()
@@ -70,7 +65,14 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
   "Retrieve Tax Liability Adjustments endpoint" should {
     "return a 200 status code" when {
       "successful request is made" in new Test {
-        override def setupStubs(): Unit = stubDownstreamSuccess()
+
+        override def setupStubs(): Unit = DownstreamStub.onSuccess(
+          DownstreamStub.GET,
+          downstreamUri,
+          queryParams,
+          status = OK,
+          body = responseJson
+        )
 
         val response: WSResponse = await(request().get())
         response.json shouldBe responseBody
@@ -88,17 +90,6 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
             override val nino: String    = requestNino
             override val taxYear: String = requestTaxYear
 
-            override def request(): WSRequest = {
-              AuditStub.audit()
-              AuthStub.authorised()
-              MtdIdLookupStub.ninoFound(nino)
-              setupStubs()
-              buildRequest(s"/$nino/$taxYear")
-                .withHttpHeaders(
-                  (ACCEPT, "application/vnd.hmrc.1.0+json"),
-                  (AUTHORIZATION, "Bearer 123")
-                )
-            }
             val response: WSResponse = await(request().get())
             response.status shouldBe expectedStatus
             response.json shouldBe Json.toJson(expectedBody)
@@ -143,8 +134,7 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
           (BAD_REQUEST, "1216", INTERNAL_SERVER_ERROR, InternalError),
           (BAD_REQUEST, "UNMATCHED_STUB_ERROR", BAD_REQUEST, RuleIncorrectGovTestScenarioError),
           (NOT_FOUND, "5010", NOT_FOUND, NotFoundError),
-          (UNPROCESSABLE_ENTITY, "4200", BAD_REQUEST, RuleOutsideAmendmentWindowError),
-          (INTERNAL_SERVER_ERROR, "5000", INTERNAL_SERVER_ERROR, InternalError)
+          (NOT_IMPLEMENTED, "5000", INTERNAL_SERVER_ERROR, InternalError)
         )
 
         input.foreach(args => serviceErrorTest.tupled(args))

@@ -18,20 +18,20 @@ package v1.retrieve.def1.model.response
 
 import api.utils.UnitSpec
 import play.api.libs.json.Json
-import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture
+import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.*
 
-class Def1_RetrieveTaxLiabilityAdjustmentsResponseSpec extends UnitSpec with Def1_RetrieveTaxLiabilityAdjustmentsFixture {
+class Def1_RetrieveTaxLiabilityAdjustmentsResponseSpec extends UnitSpec {
 
   "Def1_RetrieveTaxLiabilityAdjustmentsResponse" when {
     "read from downstream JSON" should {
       "return the parsed object" in {
-        fullDownstreamJson.as[Def1_RetrieveTaxLiabilityAdjustmentsResponse] shouldBe response
+        responseJson.as[Def1_RetrieveTaxLiabilityAdjustmentsResponse] shouldBe response
       }
     }
 
     "written to JSON" should {
       "produce the expected JSON" in {
-        Json.toJson(response) shouldBe fullMtdJson
+        Json.toJson(response) shouldBe responseJson
       }
     }
   }

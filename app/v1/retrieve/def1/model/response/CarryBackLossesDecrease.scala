@@ -14,24 +14,12 @@
  * limitations under the License.
  */
 
-package v1.retrieveHelloWorld
+package v1.retrieve.def1.model.response
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import play.api.http.Status
-import play.api.test.Helpers.*
-import play.api.test.{FakeRequest, Helpers}
+import play.api.libs.json.{Json, OFormat}
 
-class HelloWorldControllerSpec extends AnyWordSpec with Matchers {
+case class CarryBackLossesDecrease(incomeTax: Option[BigDecimal], class4: Option[BigDecimal], capitalGainsTax: Option[BigDecimal])
 
-  private val fakeRequest = FakeRequest("GET", "/")
-  private val controller  = new HelloWorldController(Helpers.stubControllerComponents())
-
-  "GET /" should {
-    "return 200" in {
-      val result = controller.hello()(fakeRequest)
-      status(result) shouldBe Status.OK
-    }
-  }
-
+object CarryBackLossesDecrease {
+  implicit val format: OFormat[CarryBackLossesDecrease] = Json.format[CarryBackLossesDecrease]
 }

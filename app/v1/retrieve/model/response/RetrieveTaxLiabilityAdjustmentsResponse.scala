@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package v1.retrieveHelloWorld
+package v1.retrieve.model.response
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import play.api.libs.json.OWrites
+import api.utils.JsonWritesUtil.writesFrom
+import v1.retrieve.def1.model.response.Def1_RetrieveTaxLiabilityAdjustmentsResponse
 
-import javax.inject.{Inject, Singleton}
+trait RetrieveTaxLiabilityAdjustmentsResponse
 
-@Singleton()
-class HelloWorldController @Inject() (
-    cc: ControllerComponents
-) extends BackendController(cc):
+object RetrieveTaxLiabilityAdjustmentsResponse {
 
-  val hello: Action[AnyContent] =
-    Action { implicit request =>
-      Ok("Hello world")
-    }
+  implicit val writes: OWrites[RetrieveTaxLiabilityAdjustmentsResponse] = writesFrom { case def1: Def1_RetrieveTaxLiabilityAdjustmentsResponse =>
+    implicitly[OWrites[Def1_RetrieveTaxLiabilityAdjustmentsResponse]].writes(def1)
+  }
+
+}

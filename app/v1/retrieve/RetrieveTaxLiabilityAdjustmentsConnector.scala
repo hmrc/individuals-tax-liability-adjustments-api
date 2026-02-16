@@ -1,0 +1,47 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package v1.retrieve
+
+import api.config.AppConfig
+import api.connectors.{BaseDownstreamConnector, DownstreamOutcome, DownstreamUri}
+import api.connectors.httpparsers.StandardDownstreamHttpParser.*
+import uk.gov.hmrc.http.HeaderCarrier
+import api.connectors.DownstreamUri.HipUri
+import uk.gov.hmrc.http.client.HttpClientV2
+import v1.retrieve.RetrieveTaxLiabilityAdjustmentsSchema.Def1.DownstreamResp
+import v1.retrieve.model.request.RetrieveTaxLiabilityAdjustmentsRequestData
+import v1.retrieve.model.response.RetrieveTaxLiabilityAdjustmentsResponse
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
+@Singleton
+class RetrieveTaxLiabilityAdjustmentsConnector @Inject() (val http: HttpClientV2, val appConfig: AppConfig) extends BaseDownstreamConnector {
+
+  def retrieveTaxLiabilityAdjustments(request: RetrieveTaxLiabilityAdjustmentsRequestData)(implicit
+      hc: HeaderCarrier,
+      ec: ExecutionContext,
+      correlationId: String): Future[DownstreamOutcome[RetrieveTaxLiabilityAdjustmentsResponse]] = {
+
+    import request.*
+
+    val downstreamUri: DownstreamUri[DownstreamResp] = HipUri(s"itsd/adjustments/tax/${nino.value}?taxYear=${taxYear.asTysDownstream}")
+
+    get(uri = downstreamUri)
+  }
+
+}

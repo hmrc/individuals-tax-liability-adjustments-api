@@ -16,7 +16,7 @@
 
 package v1.createAmend
 
-import api.config.AppConfig
+import api.config.{AppConfig, ConfigFeatureSwitches}
 import api.controllers.*
 import api.services.{AuditService, EnrolmentsAuthService, MtdIdLookupService}
 import api.utils.IdGenerator
@@ -41,28 +41,26 @@ class CreateAmendTaxLiabilityAdjustmentsController @Inject(
   override val endpointName: String = "create-amend-tax-liability-adjustments"
 
   implicit val endpointLogContext: EndpointLogContext =
-    EndpointLogContext(controllerName = "CreateAmendTaxLiabilityAdjustments", endpointName = "Create Amend Tax Liability Adjustments")
+    EndpointLogContext(controllerName = "CreateAmendTaxLiabilityAdjustmentsController", endpointName = endpointName)
   
   def createAmend(nino: String, taxYear: String): Action[JsValue] =
     authorisedAction(nino).async(parse.json) { implicit request =>
       implicit val ctx: RequestContext = RequestContext.from(idGenerator, endpointLogContext)
 
-      val validator = validatorFactory.validator(nino, taxYear, request.body)
+      val validator = validatorFactory.validator(nino, taxYear, request.body, ConfigFeatureSwitches().isTemporalValidationEnabled)
 
       val requestHandler =
         RequestHandler
           .withValidator(validator)
-          .withService { req =>
-            service.createAmendTaxLiabilityAdjustments(req)
-          }
+          .withService(service.createAmendTaxLiabilityAdjustments)
           .withAuditing(AuditHandler(
-            auditService,
+            auditService = auditService,
             auditType = "CreateAmendTaxLiabilityAdjustments",
             transactionName = "create-amend-tax-liability-adjustments",
             apiVersion = Version(request),
-            params = Map("nino" -> nino, "taxYear" -> taxYear)
+            params = Map("nino" -> nino, "taxYear" -> taxYear),
+            requestBody = Some(request.body)
           ))
-          .withNoContentResult(NO_CONTENT)
 
       requestHandler.handleRequest()
     }

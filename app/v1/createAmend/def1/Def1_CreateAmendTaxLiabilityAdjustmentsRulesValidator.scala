@@ -17,17 +17,11 @@
 package v1.createAmend.def1
 
 import cats.data.Validated
-import cats.data.Validated.Invalid
 import cats.implicits.*
 import api.controllers.validators.RulesValidator
 import api.controllers.validators.resolvers.ResolveParsedNumber
-import api.models.errors.{MtdError, RuleIncorrectOrEmptyBodyError}
-import v1.createAmend.def1.model.request.{
-  AveragingAdjustmentsDecrease,
-  CarryBackLossesDecrease,
-  Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody,
-  Def1_CreateAmendTaxLiabilityAdjustmentsRequestData
-}
+import api.models.errors.MtdError
+import v1.createAmend.def1.model.request.*
 
 object Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidator extends RulesValidator[Def1_CreateAmendTaxLiabilityAdjustmentsRequestData] {
 
@@ -35,78 +29,36 @@ object Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidator extends RulesValida
 
   def validateBusinessRules(
       parsed: Def1_CreateAmendTaxLiabilityAdjustmentsRequestData): Validated[Seq[MtdError], Def1_CreateAmendTaxLiabilityAdjustmentsRequestData] = {
-
     import parsed.*
 
     combine(
-      validateAveragingAdjustmentsDecrease(body),
-      validateCarryBackLossesDecrease(body)
+      validateAveragingAdjustmentsDecrease(body.averagingAdjustmentsDecrease),
+      validateCarryBackLossesDecrease(body.carryBackLossesDecrease)
     ).onSuccess(parsed)
   }
 
   private def validateAveragingAdjustmentsDecrease(
-      requestBody: Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody): Validated[Seq[MtdError], Unit] = {
-    requestBody.averagingAdjustmentsDecrease match {
-      case Some(averagingAdjustmentsDecrease) =>
-        validatePresenceOfAtLeastOneField(averagingAdjustmentsDecrease)
-          .productR(
-            validateAveragingAdjustmentsDecrease(averagingAdjustmentsDecrease)
-          )
-      case None => valid
+      averagingAdjustmentsDecrease: Option[AveragingAdjustmentsDecrease]): Validated[Seq[MtdError], Unit] = {
+    averagingAdjustmentsDecrease.fold(valid) { averagingAdjustmentsDecrease =>
+      List(
+        (averagingAdjustmentsDecrease.incomeTax, "/averagingAdjustmentsDecrease/incomeTax"),
+        (averagingAdjustmentsDecrease.class4, "/averagingAdjustmentsDecrease/class4"),
+        (averagingAdjustmentsDecrease.capitalGainsTax, "/averagingAdjustmentsDecrease/capitalGainsTax")
+      ).traverse_ { case (value, path) =>
+        resolveNonNegativeParsedNumber(value, path)
+      }
     }
   }
 
-  private def validateAveragingAdjustmentsDecrease(averagingAdjustmentsDecrease: AveragingAdjustmentsDecrease): Validated[Seq[MtdError], Unit] = {
-
-    import averagingAdjustmentsDecrease.*
-
-    List(
-      (incomeTax, "/averagingAdjustmentsDecrease/incomeTax"),
-      (class4, "/averagingAdjustmentsDecrease/class4"),
-      (capitalGainsTax, "/averagingAdjustmentsDecrease/capitalGainsTax")
-    ).traverse_ { case (value, path) =>
-      resolveNonNegativeParsedNumber(value, path)
-    }
-  }
-
-  private def validateCarryBackLossesDecrease(requestBody: Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody): Validated[Seq[MtdError], Unit] = {
-    requestBody.carryBackLossesDecrease match {
-      case Some(carryBackLossesDecrease) =>
-        validatePresenceOfAtLeastOneField(carryBackLossesDecrease)
-          .productR(
-            validateCarryBackLossesDecrease(carryBackLossesDecrease)
-          )
-      case None => valid
-    }
-  }
-
-  private def validateCarryBackLossesDecrease(carryBackLossesDecrease: CarryBackLossesDecrease): Validated[Seq[MtdError], Unit] = {
-    import carryBackLossesDecrease.*
-
-    List(
-      (incomeTax, "/carryBackLossesDecrease/incomeTax"),
-      (class4, "/carryBackLossesDecrease/class4"),
-      (capitalGainsTax, "/carryBackLossesDecrease/capitalGainsTax")
-    ).traverse_ { case (value, path) =>
-      resolveNonNegativeParsedNumber(value, path)
-    }
-  }
-
-  private def validatePresenceOfAtLeastOneField(averagingAdjustmentsDecrease: AveragingAdjustmentsDecrease): Validated[Seq[MtdError], Unit] = {
-    import averagingAdjustmentsDecrease.*
-    if (incomeTax.isEmpty && class4.isEmpty && capitalGainsTax.isEmpty) {
-      Invalid(List(RuleIncorrectOrEmptyBodyError.withPath("/averagingAdjustmentsDecrease")))
-    } else {
-      valid
-    }
-  }
-
-  private def validatePresenceOfAtLeastOneField(carryBackLossesDecrease: CarryBackLossesDecrease): Validated[Seq[MtdError], Unit] = {
-    import carryBackLossesDecrease.*
-    if (incomeTax.isEmpty && class4.isEmpty && capitalGainsTax.isEmpty) {
-      Invalid(List(RuleIncorrectOrEmptyBodyError.withPath("/carryBackLossesDecrease")))
-    } else {
-      valid
+  private def validateCarryBackLossesDecrease(carryBackLossesDecrease: Option[CarryBackLossesDecrease]): Validated[Seq[MtdError], Unit] = {
+    carryBackLossesDecrease.fold(valid) { carryBackLossesDecrease =>
+      List(
+        (carryBackLossesDecrease.incomeTax, "/carryBackLossesDecrease/incomeTax"),
+        (carryBackLossesDecrease.class4, "/carryBackLossesDecrease/class4"),
+        (carryBackLossesDecrease.capitalGainsTax, "/carryBackLossesDecrease/capitalGainsTax")
+      ).traverse_ { case (value, path) =>
+        resolveNonNegativeParsedNumber(value, path)
+      }
     }
   }
 

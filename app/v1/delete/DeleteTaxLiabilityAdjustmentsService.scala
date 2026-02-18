@@ -22,9 +22,10 @@ import api.services.{BaseService, ServiceOutcome}
 import cats.implicits.*
 import v1.delete.model.request.DeleteTaxLiabilityAdjustmentsRequestData
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class DeleteTaxLiabilityAdjustmentsService @Inject() (connector: DeleteTaxLiabilityAdjustmentsConnector) extends BaseService {
 
   def deleteTaxLiabilityAdjustments(

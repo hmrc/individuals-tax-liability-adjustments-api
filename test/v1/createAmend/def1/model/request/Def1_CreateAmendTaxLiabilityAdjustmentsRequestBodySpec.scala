@@ -18,25 +18,9 @@ package v1.createAmend.def1.model.request
 
 import api.utils.UnitSpec
 import play.api.libs.json.{JsError, JsValue, Json}
+import v1.createAmend.def1.fixture.Def1_CreateAmendTaxLiabilityAdjustmentsFixture.*
 
 class Def1_CreateAmendTaxLiabilityAdjustmentsRequestBodySpec extends UnitSpec {
-
-  val mtdJson: JsValue = Json.parse(
-    """
-      |{
-      |  "carryBackLossesDecrease": {
-      |    "incomeTax": 5000.99,
-      |    "class4": 5000.99,
-      |    "capitalGainsTax": 5000.99
-      |  },
-      |  "averagingAdjustmentsDecrease": {
-      |    "incomeTax": 5000.99,
-      |    "class4": 5000.99,
-      |    "capitalGainsTax": 5000.99
-      |  }
-      |}
-      |""".stripMargin
-  )
 
   val invalidJson: JsValue = Json.parse(
     """
@@ -56,30 +40,10 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsRequestBodySpec extends UnitSpec {
       |""".stripMargin
   )
 
-  val averagingAdjustmentsDecrease: AveragingAdjustmentsDecrease =
-    AveragingAdjustmentsDecrease(
-      incomeTax = Some(5000.99),
-      class4 = Some(5000.99),
-      capitalGainsTax = Some(5000.99)
-    )
-
-  val carryBackLossesDecrease: CarryBackLossesDecrease =
-    CarryBackLossesDecrease(
-      incomeTax = Some(5000.99),
-      class4 = Some(5000.99),
-      capitalGainsTax = Some(5000.99)
-    )
-
-  val mtdRequestBody: Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody =
-    Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody(
-      carryBackLossesDecrease = Some(carryBackLossesDecrease),
-      averagingAdjustmentsDecrease = Some(averagingAdjustmentsDecrease)
-    )
-
   "Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody" when {
     "read from valid Json" should {
       "produce the expected object" in {
-        mtdJson.as[Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody] shouldBe mtdRequestBody
+        requestBodyJson.as[Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody] shouldBe requestBodyModel
       }
     }
 
@@ -91,7 +55,7 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsRequestBodySpec extends UnitSpec {
 
     "written to Json" should {
       "produce the expected JsObject" in {
-        Json.toJson(mtdRequestBody) shouldBe mtdJson
+        Json.toJson(requestBodyModel) shouldBe requestBodyJson
       }
     }
   }

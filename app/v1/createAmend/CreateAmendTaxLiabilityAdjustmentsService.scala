@@ -22,9 +22,10 @@ import api.services.{BaseService, ServiceOutcome}
 import cats.implicits.*
 import v1.createAmend.model.request.CreateAmendTaxLiabilityAdjustmentsRequestData
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class CreateAmendTaxLiabilityAdjustmentsService @Inject() (connector: CreateAmendTaxLiabilityAdjustmentsConnector) extends BaseService {
 
   def createAmendTaxLiabilityAdjustments(

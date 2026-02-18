@@ -27,7 +27,7 @@ trait MockCreateAmendTaxLiabilityAdjustmentsValidatorFactory extends MockValidat
     mock[CreateAmendTaxLiabilityAdjustmentsValidatorFactory]
 
   def validator(): CallHandler[Validator[CreateAmendTaxLiabilityAdjustmentsRequestData]] = {
-    (mockCreateAmendTaxLiabilityAdjustmentsValidatorFactory.validator(_: String, _: String, _: JsValue)).expects(*, *, *)
+    (mockCreateAmendTaxLiabilityAdjustmentsValidatorFactory.validator(_: String, _: String, _: JsValue, _: Boolean)).expects(*, *, *, *)
   }
 
 }

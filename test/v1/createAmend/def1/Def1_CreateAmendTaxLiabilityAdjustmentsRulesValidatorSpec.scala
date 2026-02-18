@@ -17,12 +17,14 @@
 package v1.createAmend.def1
 
 import api.models.domain.{Nino, TaxYear}
-import api.models.errors.{ErrorWrapper, MtdError, NinoFormatError, RuleIncorrectOrEmptyBodyError}
+import api.models.errors.{ErrorWrapper, MtdError, NinoFormatError, RuleIncorrectOrEmptyBodyError, ValueFormatError}
+import api.models.utils.JsonErrorValidators
 import api.utils.UnitSpec
-import play.api.libs.json.{JsObject, JsValue, Json}
-import v1.createAmend.def1.model.request.{Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody, Def1_CreateAmendTaxLiabilityAdjustmentsRequestData}
+import play.api.libs.json.{JsBoolean, JsNumber, JsObject, JsValue, Json}
+import v1.createAmend.def1.model.request.Def1_CreateAmendTaxLiabilityAdjustmentsRequestData
+import v1.createAmend.def1.fixture.Def1_CreateAmendTaxLiabilityAdjustmentsFixture.*
 
-class Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidatorSpec extends UnitSpec {
+class Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidatorSpec extends UnitSpec with JsonErrorValidators {
 
   private implicit val correlationId: String = "someCorrelationId"
 
@@ -32,66 +34,20 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidatorSpec extends UnitSpec
   private val parsedNino    = Nino(validNino)
   private val parsedTaxYear = TaxYear.fromMtd(validTaxYear)
 
-  private val validRequestJson: JsValue =
-    Json.parse(
-      """
-      |{
-      |  "carryBackLossesDecrease": {
-      |    "incomeTax": 5000.99,
-      |    "class4": 5000.99,
-      |    "capitalGainsTax": 5000.99
-      |  },
-      |  "averagingAdjustmentsDecrease": {
-      |    "incomeTax": 5000.99,
-      |    "class4": 5000.99,
-      |    "capitalGainsTax": 5000.99
-      |  }
-      |}
-      |""".stripMargin
-    )
-
-  val invalidRequestJsonIncorrectTypes: JsValue =
-    Json.parse(
-      """
-        |{
-        |  "carryBackLossesDecrease": {
-        |    "incomeTax": true,
-        |    "class4": true,
-        |    "capitalGainsTax": true
-        |  },
-        |  "averagingAdjustmentsDecrease": {
-        |    "incomeTax": true,
-        |    "class4": true,
-        |    "capitalGainsTax": true
-        |  }
-        |}
-        |""".stripMargin
-    )
-
-  val invalidRequestJsonEmptyFields: JsValue =
-    Json.parse(
-      """
-        |{
-        |  "carryBackLossesDecrease": { },
-        |  "averagingAdjustmentsDecrease": { }
-        |}
-        |""".stripMargin
-    )
-
-  private def validate(nino: String = validNino, taxYear: String = validTaxYear, body: JsValue = validRequestJson) =
-    new Def1_CreateAmendTaxLiabilityAdjustmentsValidator(nino, taxYear, body).validateAndWrapResult()
+  private def validate(nino: String = validNino, body: JsValue = requestBodyJson) =
+    new Def1_CreateAmendTaxLiabilityAdjustmentsValidator(nino, validTaxYear, body).validateAndWrapResult()
 
   private def error(mtdError: MtdError) = Left(ErrorWrapper(correlationId, mtdError))
 
   "Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidator" should {
     "return the parsed object" when {
       "a valid request is supplied" in {
-        validate(validNino, validTaxYear, validRequestJson) shouldBe
+        validate(validNino, requestBodyJson) shouldBe
           Right(
             Def1_CreateAmendTaxLiabilityAdjustmentsRequestData(
               parsedNino,
               parsedTaxYear,
-              validRequestJson.as[Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody]
+              requestBodyModel
             ))
       }
     }
@@ -111,23 +67,20 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidatorSpec extends UnitSpec
         validate(body = Json.parse("""{"field": "value"}""")) shouldBe error(RuleIncorrectOrEmptyBodyError)
       }
 
-      "the submitted request body has fields with incorrect type" in {
-        validate(body = invalidRequestJsonIncorrectTypes) shouldBe error(
-          RuleIncorrectOrEmptyBodyError.withPaths(
-            Seq(
-              "/averagingAdjustmentsDecrease/capitalGainsTax",
-              "/averagingAdjustmentsDecrease/class4",
-              "/averagingAdjustmentsDecrease/incomeTax",
-              "/carryBackLossesDecrease/capitalGainsTax",
-              "/carryBackLossesDecrease/class4",
-              "/carryBackLossesDecrease/incomeTax"
-            )
-          )
-        )
+      requestBodyJson.collectPaths().foreach { path =>
+        s"the submitted request body has field $path with incorrect type" in {
+          val invalidJson: JsValue = requestBodyJson.update(path, JsBoolean(true))
+
+          validate(body = invalidJson) shouldBe error(RuleIncorrectOrEmptyBodyError.withPath(path))
+        }
       }
 
       "the submitted request body has empty carryBackLossesDecrease or averagingAdjustmentsDecrease objects" in {
-        validate(body = invalidRequestJsonEmptyFields) shouldBe error(
+        val invalidJson: JsValue = requestBodyJson
+          .replaceWithEmptyObject("/carryBackLossesDecrease")
+          .replaceWithEmptyObject("/averagingAdjustmentsDecrease")
+
+        validate(body = invalidJson) shouldBe error(
           RuleIncorrectOrEmptyBodyError.withPaths(
             Seq(
               "/carryBackLossesDecrease",
@@ -135,6 +88,21 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidatorSpec extends UnitSpec
             )
           )
         )
+      }
+
+      Seq(
+        "/averagingAdjustmentsDecrease/capitalGainsTax",
+        "/averagingAdjustmentsDecrease/class4",
+        "/averagingAdjustmentsDecrease/incomeTax",
+        "/carryBackLossesDecrease/capitalGainsTax",
+        "/carryBackLossesDecrease/class4",
+        "/carryBackLossesDecrease/incomeTax"
+      ).foreach { path =>
+        s"the submitted request body has field $path with an invalid value" in {
+          val invalidJson: JsValue = requestBodyJson.update(path, JsNumber(-500.99))
+
+          validate(body = invalidJson) shouldBe error(ValueFormatError.withPath(path))
+        }
       }
     }
   }

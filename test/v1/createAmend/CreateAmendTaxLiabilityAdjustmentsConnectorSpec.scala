@@ -19,7 +19,7 @@ package v1.createAmend
 import api.models.domain.{Nino, TaxYear}
 import api.connectors.ConnectorSpec
 import api.models.outcomes.ResponseWrapper
-import def1.fixture.Def1_CreateAmendTaxLiabilityAdjustmentsConnectorFixture.mtdRequestBody
+import def1.fixture.Def1_CreateAmendTaxLiabilityAdjustmentsFixture.requestBodyModel
 import uk.gov.hmrc.http.StringContextOps
 import v1.createAmend.def1.model.request.Def1_CreateAmendTaxLiabilityAdjustmentsRequestData
 import v1.createAmend.model.request.CreateAmendTaxLiabilityAdjustmentsRequestData
@@ -40,14 +40,14 @@ class CreateAmendTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
     )
 
     val requestData: CreateAmendTaxLiabilityAdjustmentsRequestData =
-      Def1_CreateAmendTaxLiabilityAdjustmentsRequestData(Nino(nino), taxYear, mtdRequestBody)
+      Def1_CreateAmendTaxLiabilityAdjustmentsRequestData(Nino(nino), taxYear, requestBodyModel)
 
     "CreateAmendTaxLiabilityAdjustmentsConnector" should {
       "return a valid response" when {
         "a valid request is made" in new HipTest with Test {
           val outcome: Future[Right[Nothing, ResponseWrapper[Unit]]] =
             Future.successful(Right(ResponseWrapper(correlationId, ())))
-          willPut(url = downstreamUrl, body = mtdRequestBody).returns(outcome)
+          willPut(url = downstreamUrl, body = requestBodyModel).returns(outcome)
           await(connector.createAmendTaxLiabilityAdjustments(requestData)) shouldBe outcome
         }
       }

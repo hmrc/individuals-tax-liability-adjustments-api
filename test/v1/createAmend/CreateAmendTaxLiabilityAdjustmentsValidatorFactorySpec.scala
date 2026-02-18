@@ -28,7 +28,8 @@ class CreateAmendTaxLiabilityAdjustmentsValidatorFactorySpec extends UnitSpec {
     new CreateAmendTaxLiabilityAdjustmentsValidatorFactory().validator(
       nino = "ignoredNino",
       taxYear = taxYear,
-      body = JsObject.empty
+      body = JsObject.empty,
+      temporalValidationEnabled = false
     )
 
   "CreateAmendTaxLiabilityAdjustmentsValidatorFactory" when {

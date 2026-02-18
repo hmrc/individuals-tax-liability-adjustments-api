@@ -23,9 +23,10 @@ import cats.implicits.*
 import v1.retrieve.model.request.RetrieveTaxLiabilityAdjustmentsRequestData
 import v1.retrieve.model.response.RetrieveTaxLiabilityAdjustmentsResponse
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class RetrieveTaxLiabilityAdjustmentsService @Inject() (connector: RetrieveTaxLiabilityAdjustmentsConnector) extends BaseService {
 
   def retrieveTaxLiabilityAdjustments(request: RetrieveTaxLiabilityAdjustmentsRequestData)(implicit

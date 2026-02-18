@@ -21,13 +21,18 @@ import api.models.domain.TaxYear
 import cats.data.Validated
 import api.controllers.validators.resolvers.ResolveDetailedTaxYear
 
+import java.time.Clock
+
 sealed trait CreateAmendTaxLiabilityAdjustmentsSchema
 
 object CreateAmendTaxLiabilityAdjustmentsSchema {
 
   case object Def1 extends CreateAmendTaxLiabilityAdjustmentsSchema
 
-  def schemaFor(taxYear: String): Validated[Seq[MtdError], CreateAmendTaxLiabilityAdjustmentsSchema] =
-    ResolveDetailedTaxYear(TaxYear.fromMtd("2026-27")).apply(taxYear).map(_ => Def1)
+  def schemaFor(taxYear: String, temporalValidationEnabled: Boolean)(implicit
+      clock: Clock = Clock.systemUTC): Validated[Seq[MtdError], CreateAmendTaxLiabilityAdjustmentsSchema] =
+    ResolveDetailedTaxYear(minimumTaxYear = TaxYear.fromMtd("2026-27"), allowIncompleteTaxYear = !temporalValidationEnabled)
+      .apply(taxYear)
+      .map(_ => Def1)
 
 }

@@ -26,8 +26,11 @@ import javax.inject.Singleton
 @Singleton
 class CreateAmendTaxLiabilityAdjustmentsValidatorFactory {
 
-  def validator(nino: String, taxYear: String, body: JsValue): Validator[CreateAmendTaxLiabilityAdjustmentsRequestData] = {
-    val schema = CreateAmendTaxLiabilityAdjustmentsSchema.schemaFor(taxYear)
+  def validator(nino: String,
+                taxYear: String,
+                body: JsValue,
+                temporalValidationEnabled: Boolean): Validator[CreateAmendTaxLiabilityAdjustmentsRequestData] = {
+    val schema = CreateAmendTaxLiabilityAdjustmentsSchema.schemaFor(taxYear, temporalValidationEnabled)
 
     schema match {
       case Valid(CreateAmendTaxLiabilityAdjustmentsSchema.Def1) =>

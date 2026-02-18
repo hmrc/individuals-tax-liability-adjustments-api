@@ -18,10 +18,11 @@ package v1.createAmend.def1.model.request
 
 import api.utils.UnitSpec
 import play.api.libs.json.{JsError, JsValue, Json}
+import v1.createAmend.def1.fixture.Def1_CreateAmendTaxLiabilityAdjustmentsFixture.carryBackLossesDecrease
 
 class CarryBackLossesDecreaseSpec extends UnitSpec {
 
-  val mtdJson: JsValue = Json.parse(
+  val json: JsValue = Json.parse(
     """
       |{
       |  "incomeTax": 5000.99,
@@ -41,17 +42,10 @@ class CarryBackLossesDecreaseSpec extends UnitSpec {
       |""".stripMargin
   )
 
-  val mtdRequestBody: CarryBackLossesDecrease =
-    CarryBackLossesDecrease(
-      incomeTax = Some(5000.99),
-      class4 = Some(5000.99),
-      capitalGainsTax = Some(5000.99)
-    )
-
   "CarryBackLossesDecrease" when {
     "read from valid Json" should {
       "produce the expected object" in {
-        mtdJson.as[CarryBackLossesDecrease] shouldBe mtdRequestBody
+        json.as[CarryBackLossesDecrease] shouldBe carryBackLossesDecrease
       }
     }
 
@@ -63,7 +57,7 @@ class CarryBackLossesDecreaseSpec extends UnitSpec {
 
     "written to Json" should {
       "produce the expected JsObject" in {
-        Json.toJson(mtdRequestBody) shouldBe mtdJson
+        Json.toJson(carryBackLossesDecrease) shouldBe json
       }
     }
   }

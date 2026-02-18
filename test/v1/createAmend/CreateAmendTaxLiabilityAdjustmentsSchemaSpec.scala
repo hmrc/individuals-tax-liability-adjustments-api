@@ -17,38 +17,61 @@
 package v1.createAmend
 
 import api.models.domain.{TaxYear, TaxYearPropertyCheckSupport}
+import api.models.errors.{RuleTaxYearNotEndedError, RuleTaxYearNotSupportedError, RuleTaxYearRangeInvalidError, TaxYearFormatError}
 import api.utils.UnitSpec
-import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import cats.data.Validated.{Invalid, Valid}
-import api.models.errors.{RuleTaxYearNotSupportedError, RuleTaxYearRangeInvalidError, TaxYearFormatError}
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import v1.createAmend.CreateAmendTaxLiabilityAdjustmentsSchema.Def1
+
+import java.time.{Clock, Instant, ZoneOffset}
 
 class CreateAmendTaxLiabilityAdjustmentsSchemaSpec extends UnitSpec with ScalaCheckDrivenPropertyChecks with TaxYearPropertyCheckSupport {
 
+  private implicit val fixedClock: Clock = Clock.fixed(Instant.parse("2027-08-01T00:00:00Z"), ZoneOffset.UTC)
+  private val minimumTaxYear: TaxYear    = TaxYear.fromMtd("2026-27")
+
+  private def schemaFor(taxYear: String, temporalValidationEnabled: Boolean = false) =
+    CreateAmendTaxLiabilityAdjustmentsSchema.schemaFor(taxYear, temporalValidationEnabled)
+
   "schema lookup" when {
-    "a correctly formatted tax year is supplied" must {
-      "disallow tax years prior to 2026-27 and return RuleTaxYearNotSupportedError" in {
-        forTaxYearsBefore(TaxYear.fromMtd("2026-27")) { taxYear =>
-          CreateAmendTaxLiabilityAdjustmentsSchema.schemaFor(taxYear.asMtd) shouldBe Invalid(Seq(RuleTaxYearNotSupportedError))
+    "a valid tax year is supplied" must {
+      "use Def1 schema for a supported tax year when temporal validation is disabled" in {
+        forTaxYearsFrom(minimumTaxYear) { taxYear =>
+          schemaFor(taxYear.asMtd) shouldBe Valid(Def1)
         }
       }
 
-      "use Def1 for tax years 2026-27 onwards" in {
-        forTaxYearsFrom(TaxYear.fromMtd("2026-27")) { taxYear =>
-          CreateAmendTaxLiabilityAdjustmentsSchema.schemaFor(taxYear.asMtd) shouldBe Valid(CreateAmendTaxLiabilityAdjustmentsSchema.Def1)
+      "use Def1 schema for a supported tax year that has ended when temporal validation is enabled" in {
+        schemaFor("2026-27", true) shouldBe Valid(Def1)
+      }
+    }
+
+    "handle errors" when {
+      "a supported tax year that has not ended is supplied with temporal validation enabled" must {
+        "return RuleTaxYearNotEndedError" in {
+          forTaxYearsFrom(TaxYear.currentTaxYear) { taxYear =>
+            schemaFor(taxYear.asMtd, true) shouldBe Invalid(Seq(RuleTaxYearNotEndedError))
+          }
         }
       }
 
-      "a badly formatted tax year is supplied" when {
-        "the tax year format is invalid" must {
-          "return a TaxYearFormatError" in {
-            CreateAmendTaxLiabilityAdjustmentsSchema.schemaFor("NotATaxYear") shouldBe Invalid(Seq(TaxYearFormatError))
+      "an unsupported tax year is supplied" must {
+        "return RuleTaxYearNotSupportedError" in {
+          forTaxYearsBefore(minimumTaxYear) { taxYear =>
+            schemaFor(taxYear.asMtd) shouldBe Invalid(Seq(RuleTaxYearNotSupportedError))
           }
         }
+      }
 
-        "the tax year range is invalid" must {
-          "return a RuleTaxYearRangeInvalidError" in {
-            CreateAmendTaxLiabilityAdjustmentsSchema.schemaFor("2020-99") shouldBe Invalid(Seq(RuleTaxYearRangeInvalidError))
-          }
+      "the tax year format is invalid" must {
+        "return TaxYearFormatError" in {
+          schemaFor("NotATaxYear") shouldBe Invalid(Seq(TaxYearFormatError))
+        }
+      }
+
+      "the tax year range is invalid" must {
+        "return RuleTaxYearRangeInvalidError" in {
+          schemaFor("2020-99") shouldBe Invalid(Seq(RuleTaxYearRangeInvalidError))
         }
       }
     }

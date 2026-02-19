@@ -39,7 +39,7 @@ class DeleteTaxLiabilityAdjustmentsController @Inject() (val authService: Enrolm
   override val endpointName: String = "delete-tax-liability-adjustments"
 
   implicit val endpointLogContext: EndpointLogContext =
-    EndpointLogContext(controllerName = "DeleteTaxLiabilityAdjustments", endpointName = "Delete Tax Liability Adjustments")
+    EndpointLogContext(controllerName = "DeleteTaxLiabilityAdjustmentsController", endpointName = endpointName)
 
   def delete(nino: String, taxYear: String): Action[AnyContent] =
     authorisedAction(nino).async { implicit request =>

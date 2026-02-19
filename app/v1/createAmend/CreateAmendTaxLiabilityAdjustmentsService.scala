@@ -14,31 +14,32 @@
  * limitations under the License.
  */
 
-package v1.delete
+package v1.createAmend
 
 import api.controllers.RequestContext
 import api.models.errors.{MtdError, *}
 import api.services.{BaseService, ServiceOutcome}
 import cats.implicits.*
-import v1.delete.model.request.DeleteTaxLiabilityAdjustmentsRequestData
+import v1.createAmend.model.request.CreateAmendTaxLiabilityAdjustmentsRequestData
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DeleteTaxLiabilityAdjustmentsService @Inject() (connector: DeleteTaxLiabilityAdjustmentsConnector) extends BaseService {
+class CreateAmendTaxLiabilityAdjustmentsService @Inject() (connector: CreateAmendTaxLiabilityAdjustmentsConnector) extends BaseService {
 
-  def deleteTaxLiabilityAdjustments(
-      request: DeleteTaxLiabilityAdjustmentsRequestData)(implicit ctx: RequestContext, ec: ExecutionContext): Future[ServiceOutcome[Unit]] =
+  def createAmendTaxLiabilityAdjustments(
+      request: CreateAmendTaxLiabilityAdjustmentsRequestData)(implicit ctx: RequestContext, ec: ExecutionContext): Future[ServiceOutcome[Unit]] =
     connector
-      .deleteTaxLiabilityAdjustments(request)
+      .createAmendTaxLiabilityAdjustments(request)
       .map(_.leftMap(mapDownstreamErrors(errorMap)))
 
   private val errorMap: Map[String, MtdError] = Map(
     "1215" -> NinoFormatError,
     "1117" -> TaxYearFormatError,
     "1216" -> InternalError,
-    "5010" -> NotFoundError,
+    "1000" -> InternalError,
+    "1115" -> RuleTaxYearNotEndedError,
     "4200" -> RuleOutsideAmendmentWindowError,
     "5000" -> InternalError
   )

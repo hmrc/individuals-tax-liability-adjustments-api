@@ -41,13 +41,15 @@ abstract class AuthMainAgentsOnlyISpec extends IntegrationBaseSpec {
 
   protected val downstreamUri: String
 
-  protected val maybeDownstreamResponseJson: Option[JsValue]
+  protected val maybeDownstreamResponseJson: Option[JsValue] = None
 
-  protected val downstreamHttpMethod: DownstreamStub.HTTPMethod = DownstreamStub.POST
+  protected val downstreamQueryParam: Map[String, String] = Map.empty
 
-  protected val downstreamSuccessStatus: Int = OK
+  protected val downstreamHttpMethod: DownstreamStub.HTTPMethod = DownstreamStub.PUT
 
-  protected val expectedMtdSuccessStatus: Int = OK
+  protected val downstreamSuccessStatus: Int = NO_CONTENT
+
+  protected val expectedMtdSuccessStatus: Int = NO_CONTENT
 
   /** One endpoint where supporting agents are allowed.
     */
@@ -69,7 +71,7 @@ abstract class AuthMainAgentsOnlyISpec extends IntegrationBaseSpec {
           AuthStub.authorisedWithPrimaryAgentEnrolment()
 
           DownstreamStub
-            .when(downstreamHttpMethod, downstreamUri)
+            .when(downstreamHttpMethod, downstreamUri, downstreamQueryParam)
             .thenReturn(downstreamSuccessStatus, maybeDownstreamResponseJson)
         }
 
@@ -167,7 +169,8 @@ abstract class AuthMainAgentsOnlyISpec extends IntegrationBaseSpec {
       buildRequest(mtdUrl)
         .withHttpHeaders(
           (ACCEPT, s"application/vnd.hmrc.$callingApiVersion+json"),
-          (AUTHORIZATION, "Bearer 123")
+          (AUTHORIZATION, "Bearer 123"),
+          ("suspend-temporal-validations", "true")
         )
     }
 

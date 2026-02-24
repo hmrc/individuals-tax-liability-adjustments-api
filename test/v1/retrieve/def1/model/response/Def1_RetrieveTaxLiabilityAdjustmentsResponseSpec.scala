@@ -18,7 +18,7 @@ package v1.retrieve.def1.model.response
 
 import api.utils.UnitSpec
 import play.api.libs.json.Json
-import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.*
+import v1.retrieve.def1.fixture.Def1_RetrieveTaxLiabilityAdjustmentsFixture.*
 
 class Def1_RetrieveTaxLiabilityAdjustmentsResponseSpec extends UnitSpec {
 

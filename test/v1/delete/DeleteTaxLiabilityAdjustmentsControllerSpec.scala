@@ -24,7 +24,6 @@ import api.models.audit.*
 import api.models.domain.TaxYear
 import api.models.errors.*
 import api.models.outcomes.ResponseWrapper
-import api.routing.Version1
 import v1.delete.def1.model.request.Def1_DeleteTaxLiabilityAdjustmentsRequestData
 import v1.delete.model.request.DeleteTaxLiabilityAdjustmentsRequestData
 
@@ -42,7 +41,7 @@ class DeleteTaxLiabilityAdjustmentsControllerSpec
     Def1_DeleteTaxLiabilityAdjustmentsRequestData(parsedNino, TaxYear.fromMtd(taxYear))
 
   "delete" should {
-    "return NoContent" when {
+    "return 204 NO_CONTENT" when {
       "the request is valid" in new Test {
         willUseValidator(returningSuccess(requestData))
 
@@ -93,7 +92,7 @@ class DeleteTaxLiabilityAdjustmentsControllerSpec
         detail = GenericAuditDetail(
           userType = "Individual",
           agentReferenceNumber = None,
-          versionNumber = Version1.name,
+          versionNumber = apiVersion.name,
           params = Map("nino" -> validNino, "taxYear" -> taxYear),
           requestBody = maybeRequestBody,
           `X-CorrelationId` = correlationId,

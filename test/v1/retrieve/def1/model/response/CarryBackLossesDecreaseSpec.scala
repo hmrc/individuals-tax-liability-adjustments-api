@@ -18,7 +18,7 @@ package v1.retrieve.def1.model.response
 
 import api.utils.UnitSpec
 import play.api.libs.json.*
-import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.carryBackLossesDecrease
+import v1.retrieve.def1.fixture.Def1_RetrieveTaxLiabilityAdjustmentsFixture.carryBackLossesDecrease
 
 class CarryBackLossesDecreaseSpec extends UnitSpec {
 

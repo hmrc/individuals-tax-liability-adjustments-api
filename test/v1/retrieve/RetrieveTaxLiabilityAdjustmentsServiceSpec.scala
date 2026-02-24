@@ -22,7 +22,7 @@ import api.models.outcomes.ResponseWrapper
 import api.services.ServiceSpec
 import v1.retrieve.def1.model.request.Def1_RetrieveTaxLiabilityAdjustmentsRequestData
 import v1.retrieve.model.request.RetrieveTaxLiabilityAdjustmentsRequestData
-import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.response
+import v1.retrieve.def1.fixture.Def1_RetrieveTaxLiabilityAdjustmentsFixture.response
 
 import scala.concurrent.Future
 

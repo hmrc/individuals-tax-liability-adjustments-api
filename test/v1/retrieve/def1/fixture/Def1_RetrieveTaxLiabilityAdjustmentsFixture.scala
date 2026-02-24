@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package v1.retrieve.def1.model
+package v1.retrieve.def1.fixture
 
 import api.models.domain.Timestamp
 import play.api.libs.json.{JsValue, Json}

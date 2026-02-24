@@ -21,34 +21,37 @@ import api.models.errors.{RuleTaxYearNotSupportedError, RuleTaxYearRangeInvalidE
 import api.utils.UnitSpec
 import cats.data.Validated.{Invalid, Valid}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import v1.delete.DeleteTaxLiabilityAdjustmentsSchema.{Def1, schemaFor}
 
 class DeleteTaxLiabilityAdjustmentsSchemaSpec extends UnitSpec with ScalaCheckDrivenPropertyChecks with TaxYearPropertyCheckSupport {
 
   "schema lookup" when {
-    "a correctly formatted tax year is supplied" must {
-      "disallow tax years prior to 2026-27 and return RuleTaxYearNotSupportedError" in {
-        forTaxYearsBefore(TaxYear.fromMtd("2026-27")) { taxYear =>
-          DeleteTaxLiabilityAdjustmentsSchema.schemaFor(taxYear.asMtd) shouldBe Invalid(Seq(RuleTaxYearNotSupportedError))
-        }
-      }
-
-      "use Def1 for tax years 2026-27 onwards" in {
+    "a valid tax year is supplied" must {
+      "use Def1 schema for tax years 2026-27 onwards" in {
         forTaxYearsFrom(TaxYear.fromMtd("2026-27")) { taxYear =>
-          DeleteTaxLiabilityAdjustmentsSchema.schemaFor(taxYear.asMtd) shouldBe Valid(DeleteTaxLiabilityAdjustmentsSchema.Def1)
+          schemaFor(taxYear.asMtd) shouldBe Valid(Def1)
         }
       }
     }
 
-    "a badly formatted tax year is supplied" when {
+    "handle errors" when {
+      "an unsupported tax year is supplied" must {
+        "disallow tax years prior to 2026-27 and return RuleTaxYearNotSupportedError" in {
+          forTaxYearsBefore(TaxYear.fromMtd("2026-27")) { taxYear =>
+            schemaFor(taxYear.asMtd) shouldBe Invalid(Seq(RuleTaxYearNotSupportedError))
+          }
+        }
+      }
+
       "the tax year format is invalid" must {
         "return a TaxYearFormatError" in {
-          DeleteTaxLiabilityAdjustmentsSchema.schemaFor("NotATaxYear") shouldBe Invalid(Seq(TaxYearFormatError))
+          schemaFor("NotATaxYear") shouldBe Invalid(Seq(TaxYearFormatError))
         }
       }
 
       "the tax year range is invalid" must {
         "return a RuleTaxYearRangeInvalidError" in {
-          DeleteTaxLiabilityAdjustmentsSchema.schemaFor("2020-99") shouldBe Invalid(Seq(RuleTaxYearRangeInvalidError))
+          schemaFor("2020-99") shouldBe Invalid(Seq(RuleTaxYearRangeInvalidError))
         }
       }
     }

@@ -4,6 +4,10 @@ info:
   version: "1.0"
   title: Individuals Tax Liability Adjustments (MTD)
   description: |
+    The following endpoints are stateful in the Sandbox:
+      * Retrieve Tax Liability Adjustments    
+      * Create or Amend Tax Liability Adjustments
+      * Delete Tax Liability Adjustments
     
     # Send fraud prevention data
     HMRC monitors transactions to help protect your customers' confidential data from criminals and fraudsters. 

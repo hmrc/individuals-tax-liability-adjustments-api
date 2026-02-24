@@ -24,7 +24,7 @@ import play.api.libs.json.{JsBoolean, JsNumber, JsObject, JsValue, Json}
 import v1.createAmend.def1.model.request.Def1_CreateAmendTaxLiabilityAdjustmentsRequestData
 import v1.createAmend.def1.fixture.Def1_CreateAmendTaxLiabilityAdjustmentsFixture.*
 
-class Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidatorSpec extends UnitSpec with JsonErrorValidators {
+class Def1_CreateAmendTaxLiabilityAdjustmentsValidatorSpec extends UnitSpec with JsonErrorValidators {
 
   private implicit val correlationId: String = "someCorrelationId"
 
@@ -39,7 +39,7 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidatorSpec extends UnitSpec
 
   private def error(mtdError: MtdError) = Left(ErrorWrapper(correlationId, mtdError))
 
-  "Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidator" should {
+  "Def1_CreateAmendTaxLiabilityAdjustmentsValidator" should {
     "return the parsed object" when {
       "a valid request is supplied" in {
         validate(validNino, requestBodyJson) shouldBe
@@ -75,7 +75,7 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidatorSpec extends UnitSpec
         }
       }
 
-      "the submitted request body has empty carryBackLossesDecrease or averagingAdjustmentsDecrease objects" in {
+      "the submitted request body has empty carryBackLossesDecrease and averagingAdjustmentsDecrease objects" in {
         val invalidJson: JsValue = requestBodyJson
           .replaceWithEmptyObject("/carryBackLossesDecrease")
           .replaceWithEmptyObject("/averagingAdjustmentsDecrease")
@@ -89,14 +89,16 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidatorSpec extends UnitSpec
           )
         )
       }
+    }
 
+    "return ValueFormatError" when {
       Seq(
-        "/averagingAdjustmentsDecrease/capitalGainsTax",
-        "/averagingAdjustmentsDecrease/class4",
         "/averagingAdjustmentsDecrease/incomeTax",
-        "/carryBackLossesDecrease/capitalGainsTax",
+        "/averagingAdjustmentsDecrease/class4",
+        "/averagingAdjustmentsDecrease/capitalGainsTax",
+        "/carryBackLossesDecrease/incomeTax",
         "/carryBackLossesDecrease/class4",
-        "/carryBackLossesDecrease/incomeTax"
+        "/carryBackLossesDecrease/capitalGainsTax"
       ).foreach { path =>
         s"the submitted request body has field $path with an invalid value" in {
           val invalidJson: JsValue = requestBodyJson.update(path, JsNumber(-500.99))

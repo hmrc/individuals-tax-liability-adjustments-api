@@ -18,28 +18,16 @@ package v1.delete
 
 import api.support.IntegrationBaseSpec
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.http.HeaderNames.ACCEPT
-import play.api.http.Status.*
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
-import play.api.test.Helpers.AUTHORIZATION
+import play.api.test.Helpers.*
 import api.models.errors.*
 import api.services.{AuditStub, AuthStub, DownstreamStub, MtdIdLookupStub}
 import play.api.libs.ws.DefaultBodyReadables.readableAsString
 
 class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
 
-  private def errorBody(code: String): String =
-    s"""
-       | [
-       |    {
-       |      "errorCode": "$code",
-       |      "errorDescription": "message"
-       |    }
-       |  ]
-    """.stripMargin
-
-  "Calling the Delete tax liability adjustments endpoint" should {
+  "Calling the Delete Tax Liability Adjustments endpoint" should {
     "return a 204 status code" when {
       "a valid request is made" in new Test {
         override def setupStubs(): StubMapping = {
@@ -50,7 +38,7 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
           DownstreamStub.onSuccess(
             method = DownstreamStub.DELETE,
             uri = downstreamUri,
-            queryParams = Map("taxYear" -> "26-27"),
+            queryParams = downstreamQueryParams,
             status = NO_CONTENT,
             body = JsObject.empty
           )
@@ -66,50 +54,48 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
 
     "return error according to spec" when {
       "validation error" when {
-        "validation error" when {
-          def validationErrorTest(requestNino: String, requestTaxYear: String, expectedStatus: Int, expectedBody: MtdError): Unit = {
-            s"validation fails with ${expectedBody.code} error" in new Test {
+        def validationErrorTest(requestNino: String, requestTaxYear: String, expectedStatus: Int, expectedBody: MtdError): Unit = {
+          s"validation fails with ${expectedBody.code} error" in new Test {
+            override val nino: String    = requestNino
+            override val taxYear: String = requestTaxYear
 
-              override val nino: String    = requestNino
-              override val taxYear: String = requestTaxYear
-
-              override def setupStubs(): StubMapping = {
-                AuditStub.audit()
-                MtdIdLookupStub.ninoFound(nino)
-                AuthStub.authorised()
-              }
-
-              val response: WSResponse = await(request().delete())
-              response.status shouldBe expectedStatus
-              response.json shouldBe Json.toJson(expectedBody)
-              response.header("Content-Type") shouldBe Some("application/json")
-            }
-          }
-
-          val input = List(
-            ("AA1123A", "2026-27", BAD_REQUEST, NinoFormatError),
-            ("AA123456A", "invalid", BAD_REQUEST, TaxYearFormatError),
-            ("AA123456A", "2025-27", BAD_REQUEST, RuleTaxYearRangeInvalidError),
-            ("AA123456A", "2025-26", BAD_REQUEST, RuleTaxYearNotSupportedError)
-          )
-
-          input.foreach(validationErrorTest.tupled)
-        }
-      }
-
-      "downstream service error" when {
-        def serviceErrorTest(downstreamStatus: Int, downstreamCode: String, expectedStatus: Int, expectedBody: MtdError): Unit = {
-          s"downstream returns an $downstreamCode error and status $downstreamStatus" in new Test {
             override def setupStubs(): StubMapping = {
               AuditStub.audit()
               MtdIdLookupStub.ninoFound(nino)
               AuthStub.authorised()
-              DownstreamStub.onError(DownstreamStub.DELETE, downstreamUri, downstreamStatus, errorBody(downstreamCode))
+            }
+
+            val response: WSResponse = await(request().delete())
+            response.status shouldBe expectedStatus
+            response.json shouldBe Json.toJson(expectedBody)
+            response.header("Content-Type") shouldBe Some("application/json")
+          }
+        }
+
+        val input = List(
+          ("AA1123A", "2026-27", BAD_REQUEST, NinoFormatError),
+          ("AA123456A", "invalid", BAD_REQUEST, TaxYearFormatError),
+          ("AA123456A", "2025-27", BAD_REQUEST, RuleTaxYearRangeInvalidError),
+          ("AA123456A", "2025-26", BAD_REQUEST, RuleTaxYearNotSupportedError)
+        )
+
+        input.foreach(validationErrorTest.tupled)
+      }
+
+      "downstream service error" when {
+        def serviceErrorTest(downstreamStatus: Int, downstreamCode: String, expectedStatus: Int, expectedBody: MtdError): Unit = {
+          s"downstream returns a code $downstreamCode error and status $downstreamStatus" in new Test {
+            override def setupStubs(): StubMapping = {
+              AuditStub.audit()
+              MtdIdLookupStub.ninoFound(nino)
+              AuthStub.authorised()
+              DownstreamStub.onError(DownstreamStub.DELETE, downstreamUri, downstreamQueryParams, downstreamStatus, errorBody(downstreamCode))
             }
 
             val response: WSResponse = await(request().delete())
             response.json shouldBe Json.toJson(expectedBody)
             response.status shouldBe expectedStatus
+            response.header("X-CorrelationId").nonEmpty shouldBe true
             response.header("Content-Type") shouldBe Some("application/json")
           }
         }
@@ -149,6 +135,18 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
     }
 
     def downstreamUri: String = s"/itsd/adjustments/tax/$nino"
+
+    val downstreamQueryParams: Map[String, String] = Map("taxYear" -> "26-27")
+
+    def errorBody(code: String): String =
+      s"""
+        |[
+        |  {
+        |    "errorCode": "$code",
+        |    "errorDescription": "message"
+        |  }
+        |]
+      """.stripMargin
 
   }
 

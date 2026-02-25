@@ -22,52 +22,40 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.test.Helpers.*
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
-import play.api.test.Helpers.AUTHORIZATION
 import api.models.errors.*
 import api.services.{AuditStub, AuthStub, DownstreamStub, MtdIdLookupStub}
 import play.api.libs.ws.DefaultBodyReadables.readableAsString
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import v1.createAmend.def1.fixture.Def1_CreateAmendTaxLiabilityAdjustmentsFixture.requestBodyJson
 
-import java.time.{Clock, Instant, ZoneOffset}
+import scala.math.Ordering.Implicits.infixOrderingOps
 
 class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
 
-  private def errorBody(code: String): String =
-    s"""
-       | [
-       |    {
-       |      "errorCode": "$code",
-       |      "errorDescription": "message"
-       |    }
-       |  ]
-      """.stripMargin
+  private val parsedTaxYear: TaxYear   = TaxYear.fromMtd("2026-27")
+  private val notEndedTaxYear: TaxYear = parsedTaxYear.max(TaxYear.currentTaxYear)
 
-  val invalidRequestJsonNegativeFields: JsValue =
-    Json.parse(
-      """
-        |{
-        |  "carryBackLossesDecrease": {
-        |    "incomeTax": -5000.99,
-        |    "class4": -5000.99,
-        |    "capitalGainsTax": -5000.99
-        |  },
-        |  "averagingAdjustmentsDecrease": {
-        |    "incomeTax": -5000.99,
-        |    "class4": -5000.99,
-        |    "capitalGainsTax": -5000.99
-        |  }
-        |}
-        |""".stripMargin
-    )
+  private val invalidRequestJsonNegativeFields: JsValue = Json.parse(
+    """
+      |{
+      |  "carryBackLossesDecrease": {
+      |    "incomeTax": -5000.99,
+      |    "class4": -5000.99,
+      |    "capitalGainsTax": -5000.99
+      |  },
+      |  "averagingAdjustmentsDecrease": {
+      |    "incomeTax": -5000.99,
+      |    "class4": -5000.99,
+      |    "capitalGainsTax": -5000.99
+      |  }
+      |}
+    """.stripMargin
+  )
 
-  private implicit val fixedClock: Clock = Clock.fixed(Instant.parse("2026-08-01T00:00:00Z"), ZoneOffset.UTC)
-  private val currentTaxYear: TaxYear    = TaxYear.currentTaxYear
-
-  "Calling the Create Amend tax liability adjustments endpoint" should {
+  "Calling the Create or Amend Tax Liability Adjustments endpoint" should {
     "return a 204 status code" when {
-      "a valid request is made with the current tax year and suspendTemporalValidations is true" in new Test {
-        override val taxYear: String = currentTaxYear.asMtd
+      "any valid request is made with a supported tax year that has not ended and suspendTemporalValidations is true" in new Test {
+        override val taxYear: String = notEndedTaxYear.asMtd
 
         override def setupStubs(): StubMapping = {
           AuditStub.audit()
@@ -77,7 +65,7 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
           DownstreamStub.onSuccess(
             method = DownstreamStub.PUT,
             uri = downstreamUri,
-            queryParams = Map("taxYear" -> currentTaxYear.asTysDownstream),
+            queryParams = Map("taxYear" -> notEndedTaxYear.asTysDownstream),
             status = NO_CONTENT,
             body = JsObject.empty
           )
@@ -99,10 +87,9 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
                                 expectedStatus: Int,
                                 expectedBody: MtdError): Unit = {
           s"validation fails with ${expectedBody.code} error" in new Test {
-
             override val nino: String                       = requestNino
             override val taxYear: String                    = requestTaxYear
-            override val suspendTemporalValidations: String = "false"
+            override val suspendTemporalValidations: String = (expectedBody != RuleTaxYearNotEndedError).toString
 
             override def setupStubs(): StubMapping = {
               AuditStub.audit()
@@ -112,6 +99,7 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
 
             val response: WSResponse = await(request().put(requestBody))
             response.status shouldBe expectedStatus
+            response.json shouldBe Json.toJson(expectedBody)
             response.header("Content-Type") shouldBe Some("application/json")
           }
         }
@@ -121,6 +109,8 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
           ("AA123456A", "invalid", requestBodyJson, BAD_REQUEST, TaxYearFormatError),
           ("AA123456A", "2025-27", requestBodyJson, BAD_REQUEST, RuleTaxYearRangeInvalidError),
           ("AA123456A", "2025-26", requestBodyJson, BAD_REQUEST, RuleTaxYearNotSupportedError),
+          ("AA123456A", notEndedTaxYear.asMtd, requestBodyJson, BAD_REQUEST, RuleTaxYearNotEndedError),
+          ("AA123456A", "2026-27", JsObject.empty, BAD_REQUEST, RuleIncorrectOrEmptyBodyError),
           (
             "AA123456A",
             "2026-27",
@@ -128,16 +118,15 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
             BAD_REQUEST,
             ValueFormatError.withPaths(
               Seq(
-                "/averagingAdjustmentsDecrease/capitalGainsTax",
-                "/averagingAdjustmentsDecrease/class4",
                 "/averagingAdjustmentsDecrease/incomeTax",
-                "/carryBackLossesDecrease/capitalGainsTax",
+                "/averagingAdjustmentsDecrease/class4",
+                "/averagingAdjustmentsDecrease/capitalGainsTax",
+                "/carryBackLossesDecrease/incomeTax",
                 "/carryBackLossesDecrease/class4",
-                "/carryBackLossesDecrease/incomeTax"
+                "/carryBackLossesDecrease/capitalGainsTax"
               )
-            )),
-          ("AA123456A", currentTaxYear.asMtd, requestBodyJson, BAD_REQUEST, RuleTaxYearNotEndedError),
-          ("AA123456A", "2026-27", JsObject.empty, BAD_REQUEST, RuleIncorrectOrEmptyBodyError)
+            )
+          )
         )
 
         input.foreach(validationErrorTest.tupled)
@@ -145,18 +134,24 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
     }
     "downstream service error" when {
       def serviceErrorTest(downstreamStatus: Int, downstreamCode: String, expectedStatus: Int, expectedBody: MtdError): Unit = {
-        s"downstream returns an $downstreamCode error and status $downstreamStatus" in new Test {
-
+        s"downstream returns a code $downstreamCode error and status $downstreamStatus" in new Test {
           override def setupStubs(): StubMapping = {
             AuditStub.audit()
             MtdIdLookupStub.ninoFound(nino)
             AuthStub.authorised()
-            DownstreamStub.onError(DownstreamStub.PUT, downstreamUri, downstreamStatus, errorBody(downstreamCode))
+            DownstreamStub.onError(
+              method = DownstreamStub.PUT,
+              uri = downstreamUri,
+              queryParams = Map("taxYear" -> parsedTaxYear.asTysDownstream),
+              errorStatus = downstreamStatus,
+              errorBody = errorBody(downstreamCode)
+            )
           }
 
           val response: WSResponse = await(request().put(requestBodyJson))
           response.json shouldBe Json.toJson(expectedBody)
           response.status shouldBe expectedStatus
+          response.header("X-CorrelationId").nonEmpty shouldBe true
           response.header("Content-Type") shouldBe Some("application/json")
         }
       }
@@ -178,7 +173,7 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
 
   private trait Test {
     val nino: String                       = "AA123456A"
-    val taxYear: String                    = "2026-27"
+    val taxYear: String                    = parsedTaxYear.asMtd
     val suspendTemporalValidations: String = "true"
 
     def setupStubs(): StubMapping
@@ -198,6 +193,16 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
     }
 
     def downstreamUri: String = s"/itsd/adjustments/tax/$nino"
+
+    def errorBody(code: String): String =
+      s"""
+        |[
+        |  {
+        |    "errorCode": "$code",
+        |    "errorDescription": "message"
+        |  }
+        |]
+      """.stripMargin
 
   }
 

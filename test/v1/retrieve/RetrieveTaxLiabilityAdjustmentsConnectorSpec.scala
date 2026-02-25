@@ -25,7 +25,7 @@ import scala.concurrent.Future
 import api.models.domain.{Nino, TaxYear}
 import api.models.errors.{DownstreamErrorCode, DownstreamErrors}
 import api.models.outcomes.ResponseWrapper
-import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.response
+import v1.retrieve.def1.fixture.Def1_RetrieveTaxLiabilityAdjustmentsFixture.response
 
 class RetrieveTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
 

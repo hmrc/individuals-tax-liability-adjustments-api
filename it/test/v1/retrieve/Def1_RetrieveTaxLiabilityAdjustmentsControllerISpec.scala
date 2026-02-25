@@ -22,7 +22,7 @@ import api.support.IntegrationBaseSpec
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSRequest, WSResponse}
 import play.api.test.Helpers.*
-import v1.retrieve.def1.model.Def1_RetrieveTaxLiabilityAdjustmentsFixture.responseJson
+import v1.retrieve.def1.fixture.Def1_RetrieveTaxLiabilityAdjustmentsFixture.responseJson
 
 class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
 
@@ -32,7 +32,7 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
     def taxYear: String       = "2026-27"
     val responseBody: JsValue = responseJson
 
-    val queryParams: Map[String, String] = Map("taxYear" -> "26-27")
+    val downstreamQueryParams: Map[String, String] = Map("taxYear" -> "26-27")
 
     def downstreamUri: String = s"/itsd/adjustments/tax/$nino"
 
@@ -52,24 +52,23 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
 
     def errorBody(code: String): String =
       s"""
-         | [
-         |    {
-         |      "errorCode": "$code",
-         |      "errorDescription": "message"
-         |    }
-         |  ]
+        |[
+        |  {
+        |    "errorCode": "$code",
+        |    "errorDescription": "message"
+        |  }
+        |]
       """.stripMargin
 
   }
 
-  "Retrieve Tax Liability Adjustments endpoint" should {
+  "Calling the Retrieve Tax Liability Adjustments endpoint" should {
     "return a 200 status code" when {
       "successful request is made" in new Test {
-
         override def setupStubs(): Unit = DownstreamStub.onSuccess(
-          DownstreamStub.GET,
-          downstreamUri,
-          queryParams,
+          method = DownstreamStub.GET,
+          uri = downstreamUri,
+          queryParams = downstreamQueryParams,
           status = OK,
           body = responseJson
         )
@@ -77,16 +76,15 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
         val response: WSResponse = await(request().get())
         response.json shouldBe responseBody
         response.status shouldBe OK
-        response.header("X-CorrelationId") should not be empty
+        response.header("X-CorrelationId").nonEmpty shouldBe true
         response.header("Content-Type") shouldBe Some("application/json")
       }
     }
 
-    "return validation error according to spec" when {
+    "return error according to spec" when {
       "validation error" when {
         def validationErrorTest(requestNino: String, requestTaxYear: String, expectedStatus: Int, expectedBody: MtdError): Unit = {
           s"validation fails with ${expectedBody.code} error" in new Test {
-
             override val nino: String    = requestNino
             override val taxYear: String = requestTaxYear
 
@@ -106,38 +104,38 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
 
         input.foreach(args => validationErrorTest.tupled(args))
       }
-    }
 
-    "downstream service error" when {
-      "return mapped downstream service error" when {
-        def serviceErrorTest(downstreamStatus: Int, downstreamCode: String, expectedStatus: Int, expectedBody: MtdError): Unit = {
-          s"downstream returns an $downstreamCode error and status $downstreamStatus" in new Test {
+      "downstream service error" when {
+        "return mapped downstream service error" when {
+          def serviceErrorTest(downstreamStatus: Int, downstreamCode: String, expectedStatus: Int, expectedBody: MtdError): Unit = {
+            s"downstream returns a code $downstreamCode error and status $downstreamStatus" in new Test {
+              override def setupStubs(): Unit = DownstreamStub.onError(
+                method = DownstreamStub.GET,
+                uri = downstreamUri,
+                queryParams = downstreamQueryParams,
+                errorStatus = downstreamStatus,
+                errorBody = errorBody(downstreamCode)
+              )
 
-            override def setupStubs(): Unit = DownstreamStub.onError(
-              DownstreamStub.GET,
-              downstreamUri,
-              queryParams,
-              downstreamStatus,
-              errorBody(downstreamCode)
-            )
-
-            val response: WSResponse = await(request().get())
-            response.status shouldBe expectedStatus
-            response.json shouldBe Json.toJson(expectedBody)
-            response.header("Content-Type") shouldBe Some("application/json")
+              val response: WSResponse = await(request().get())
+              response.status shouldBe expectedStatus
+              response.json shouldBe Json.toJson(expectedBody)
+              response.header("X-CorrelationId").nonEmpty shouldBe true
+              response.header("Content-Type") shouldBe Some("application/json")
+            }
           }
+
+          val input = List(
+            (BAD_REQUEST, "1215", BAD_REQUEST, NinoFormatError),
+            (BAD_REQUEST, "1117", BAD_REQUEST, TaxYearFormatError),
+            (BAD_REQUEST, "1216", INTERNAL_SERVER_ERROR, InternalError),
+            (BAD_REQUEST, "UNMATCHED_STUB_ERROR", BAD_REQUEST, RuleIncorrectGovTestScenarioError),
+            (NOT_FOUND, "5010", NOT_FOUND, NotFoundError),
+            (NOT_IMPLEMENTED, "5000", INTERNAL_SERVER_ERROR, InternalError)
+          )
+
+          input.foreach(args => serviceErrorTest.tupled(args))
         }
-
-        val input = List(
-          (BAD_REQUEST, "1215", BAD_REQUEST, NinoFormatError),
-          (BAD_REQUEST, "1117", BAD_REQUEST, TaxYearFormatError),
-          (BAD_REQUEST, "1216", INTERNAL_SERVER_ERROR, InternalError),
-          (BAD_REQUEST, "UNMATCHED_STUB_ERROR", BAD_REQUEST, RuleIncorrectGovTestScenarioError),
-          (NOT_FOUND, "5010", NOT_FOUND, NotFoundError),
-          (NOT_IMPLEMENTED, "5000", INTERNAL_SERVER_ERROR, InternalError)
-        )
-
-        input.foreach(args => serviceErrorTest.tupled(args))
       }
     }
   }

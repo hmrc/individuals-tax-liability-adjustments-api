@@ -42,7 +42,7 @@ class CreateAmendTaxLiabilityAdjustmentsSchemaSpec extends UnitSpec with ScalaCh
       }
 
       "use Def1 schema for a supported tax year that has ended when temporal validation is enabled" in {
-        schemaFor("2026-27", true) shouldBe Valid(Def1)
+        schemaFor(minimumTaxYear.asMtd, true) shouldBe Valid(Def1)
       }
     }
 

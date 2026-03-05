@@ -38,6 +38,7 @@ class RetrieveTaxLiabilityAdjustmentsService @Inject() (connector: RetrieveTaxLi
     "1215" -> NinoFormatError,
     "1117" -> TaxYearFormatError,
     "1216" -> InternalError,
+    "1113" -> RuleTaxYearNotSupportedError,
     "5010" -> NotFoundError,
     "5000" -> InternalError
   )

@@ -38,6 +38,7 @@ class DeleteTaxLiabilityAdjustmentsService @Inject() (connector: DeleteTaxLiabil
     "1215" -> NinoFormatError,
     "1117" -> TaxYearFormatError,
     "1216" -> InternalError,
+    "1113" -> RuleTaxYearNotSupportedError,
     "5010" -> NotFoundError,
     "4200" -> RuleOutsideAmendmentWindowError,
     "5000" -> InternalError

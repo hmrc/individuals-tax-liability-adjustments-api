@@ -39,7 +39,7 @@ class RetrieveTaxLiabilityAdjustmentsConnector @Inject() (val http: HttpClientV2
 
     import request.*
 
-    val downstreamUri: DownstreamUri[DownstreamResp] = HipUri(s"itsd/adjustments/tax/${nino.value}?taxYear=${taxYear.asTysDownstream}")
+    val downstreamUri: DownstreamUri[DownstreamResp] = HipUri(s"itsd/adjustments/tax/${nino.value}/${taxYear.asTysDownstream}")
 
     get(uri = downstreamUri)
   }

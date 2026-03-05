@@ -41,7 +41,7 @@ class CreateAmendTaxLiabilityAdjustmentsConnector @Inject() (
 
     import request.*
 
-    val downstreamUri = HipUri[Unit](s"itsd/adjustments/tax/${nino.value}?taxYear=${taxYear.asTysDownstream}")
+    val downstreamUri = HipUri[Unit](s"itsd/adjustments/tax/${nino.value}/${taxYear.asTysDownstream}")
 
     put(body, downstreamUri)
   }

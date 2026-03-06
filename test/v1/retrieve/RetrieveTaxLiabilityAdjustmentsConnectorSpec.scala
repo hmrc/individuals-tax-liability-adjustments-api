@@ -29,9 +29,9 @@ import v1.retrieve.def1.fixture.Def1_RetrieveTaxLiabilityAdjustmentsFixture.resp
 
 class RetrieveTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
 
-  private val nino          = "AA123456A"
+  private val nino: String = "AA123456A"
   private val taxYear: String = "2026-27"
-  private val downstreamUrl = url"$baseUrl/itsa/income-tax/v1/26-27/adjustments/tax/$nino"
+  private val downstreamUrl: String = url"$baseUrl/itsa/income-tax/v1/26-27/adjustments/tax/$ni
 
   trait Test extends ConnectorTest {
 

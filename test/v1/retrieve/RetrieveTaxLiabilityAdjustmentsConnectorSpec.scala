@@ -30,7 +30,7 @@ import v1.retrieve.def1.fixture.Def1_RetrieveTaxLiabilityAdjustmentsFixture.resp
 class RetrieveTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
 
   private val nino          = "AA123456A"
-  private val taxYear       = TaxYear.fromMtd("2026-27")
+  private val taxYear: String = "2026-27"
   private val downstreamUrl = url"$baseUrl/itsa/income-tax/v1/26-27/adjustments/tax/$nino"
 
   trait Test extends ConnectorTest {
@@ -39,7 +39,7 @@ class RetrieveTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
       new RetrieveTaxLiabilityAdjustmentsConnector(http = mockHttpClient, appConfig = mockAppConfig)
 
     val requestData: RetrieveTaxLiabilityAdjustmentsRequestData =
-      Def1_RetrieveTaxLiabilityAdjustmentsRequestData(Nino(nino), taxYear)
+      Def1_RetrieveTaxLiabilityAdjustmentsRequestData(Nino(nino), TaxYear.fromMtd(taxYear))
 
   }
 

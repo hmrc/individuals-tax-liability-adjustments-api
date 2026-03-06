@@ -21,17 +21,20 @@ import uk.gov.hmrc.http.StringContextOps
 import v1.retrieve.def1.model.request.Def1_RetrieveTaxLiabilityAdjustmentsRequestData
 import v1.retrieve.model.request.RetrieveTaxLiabilityAdjustmentsRequestData
 import v1.retrieve.model.response.RetrieveTaxLiabilityAdjustmentsResponse
+
 import scala.concurrent.Future
 import api.models.domain.{Nino, TaxYear}
 import api.models.errors.{DownstreamErrorCode, DownstreamErrors}
 import api.models.outcomes.ResponseWrapper
 import v1.retrieve.def1.fixture.Def1_RetrieveTaxLiabilityAdjustmentsFixture.response
 
+import java.net.URL
+
 class RetrieveTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
 
-  private val nino: String = "AA123456A"
-  private val taxYear: String = "2026-27"
-  private val downstreamUrl: String = url"$baseUrl/itsa/income-tax/v1/26-27/adjustments/tax/$ni
+  private val nino: String       = "AA123456A"
+  private val taxYear: String    = "2026-27"
+  private val downstreamUrl: URL = url"$baseUrl/itsa/income-tax/v1/26-27/adjustments/tax/$nino"
 
   trait Test extends ConnectorTest {
 

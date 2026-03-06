@@ -37,7 +37,7 @@ class DeleteTaxLiabilityAdjustmentsConnector @Inject() (val http: HttpClientV2, 
 
     import request.*
 
-    val downstreamUri = HipUri[Unit](s"itsd/adjustments/tax/${nino.value}/${taxYear.asTysDownstream}")
+    val downstreamUri = HipUri[Unit](s"itsa/income-tax/v1/${taxYear.asTysDownstream}/adjustments/tax/${nino.value}")
 
     delete(downstreamUri)
   }

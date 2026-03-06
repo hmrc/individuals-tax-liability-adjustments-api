@@ -31,7 +31,5 @@ class TaxLiabilityAdjustmentsAuthSupportingAgentsAllowedISpec extends AuthSuppor
 
   def sendMtdRequest(request: WSRequest): WSResponse = await(request.put(requestBodyJson))
 
-  val downstreamUri = s"/itsd/adjustments/tax/$nino"
-
-  override val downstreamQueryParam: Map[String, String] = Map("taxYear" -> "26-27")
+  val downstreamUri = s"/itsa/income-tax/v1/26-27/adjustments/tax/$nino"
 }

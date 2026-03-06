@@ -32,9 +32,7 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
     def taxYear: String       = "2026-27"
     val responseBody: JsValue = responseJson
 
-    val downstreamQueryParams: Map[String, String] = Map("taxYear" -> "26-27")
-
-    def downstreamUri: String = s"/itsd/adjustments/tax/$nino"
+    def downstreamUri: String = s"/itsa/income-tax/v1/26-27/adjustments/tax/$nino"
 
     def request(): WSRequest = {
       AuditStub.audit()
@@ -52,12 +50,17 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
 
     def errorBody(code: String): String =
       s"""
-        |[
-        |  {
-        |    "errorCode": "$code",
-        |    "errorDescription": "message"
-        |  }
-        |]
+         |{
+         |  "origin": "HoD",
+         |  "response": {
+         |    "failures": [
+         |      {
+         |        "type": "$code",
+         |        "reason": "downstream message"
+         |      }
+         |    ]
+         |  }
+         |}
       """.stripMargin
 
   }
@@ -68,7 +71,6 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
         override def setupStubs(): Unit = DownstreamStub.onSuccess(
           method = DownstreamStub.GET,
           uri = downstreamUri,
-          queryParams = downstreamQueryParams,
           status = OK,
           body = responseJson
         )
@@ -112,7 +114,6 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
               override def setupStubs(): Unit = DownstreamStub.onError(
                 method = DownstreamStub.GET,
                 uri = downstreamUri,
-                queryParams = downstreamQueryParams,
                 errorStatus = downstreamStatus,
                 errorBody = errorBody(downstreamCode)
               )
@@ -126,12 +127,14 @@ class Def1_RetrieveTaxLiabilityAdjustmentsControllerISpec extends IntegrationBas
           }
 
           val input = List(
-            (BAD_REQUEST, "1215", BAD_REQUEST, NinoFormatError),
-            (BAD_REQUEST, "1117", BAD_REQUEST, TaxYearFormatError),
-            (BAD_REQUEST, "1216", INTERNAL_SERVER_ERROR, InternalError),
+            (BAD_REQUEST, "INVALID_TAXABLE_ENTITY_ID", BAD_REQUEST, NinoFormatError),
+            (BAD_REQUEST, "INVALID_TAX_YEAR", BAD_REQUEST, TaxYearFormatError),
+            (BAD_REQUEST, "INVALID_CORRELATION_ID", INTERNAL_SERVER_ERROR, InternalError),
             (BAD_REQUEST, "UNMATCHED_STUB_ERROR", BAD_REQUEST, RuleIncorrectGovTestScenarioError),
-            (NOT_FOUND, "5010", NOT_FOUND, NotFoundError),
-            (NOT_IMPLEMENTED, "5000", INTERNAL_SERVER_ERROR, InternalError)
+            (NOT_FOUND, "NO_DATA_FOUND", NOT_FOUND, NotFoundError),
+            (UNPROCESSABLE_ENTITY, "TAX_YEAR_NOT_SUPPORTED", INTERNAL_SERVER_ERROR, InternalError),
+            (INTERNAL_SERVER_ERROR, "SERVER_ERROR", INTERNAL_SERVER_ERROR, InternalError),
+            (SERVICE_UNAVAILABLE, "SERVICE_UNAVAILABLE", INTERNAL_SERVER_ERROR, InternalError)
           )
 
           input.foreach(args => serviceErrorTest.tupled(args))

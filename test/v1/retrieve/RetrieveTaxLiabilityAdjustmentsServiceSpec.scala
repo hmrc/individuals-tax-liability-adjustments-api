@@ -57,11 +57,13 @@ class RetrieveTaxLiabilityAdjustmentsServiceSpec extends ServiceSpec {
         }
 
       val errorMap = List(
-        "1215" -> NinoFormatError,
-        "1117" -> TaxYearFormatError,
-        "1216" -> InternalError,
-        "5000" -> InternalError,
-        "5010" -> NotFoundError
+        "INVALID_TAXABLE_ENTITY_ID" -> NinoFormatError,
+        "INVALID_TAX_YEAR"          -> TaxYearFormatError,
+        "INVALID_CORRELATION_ID"    -> InternalError,
+        "NO_DATA_FOUND"             -> NotFoundError,
+        "TAX_YEAR_NOT_SUPPORTED"    -> InternalError,
+        "SERVER_ERROR"              -> InternalError,
+        "SERVICE_UNAVAILABLE"       -> InternalError
       )
 
       errorMap.foreach(args => serviceError.tupled(args))

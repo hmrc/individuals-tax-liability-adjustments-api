@@ -16,15 +16,14 @@
 
 package api.models.errors
 
-import play.api.libs.json.{Json, Reads, JsPath}
-import play.api.libs.functional.syntax.*
+import play.api.libs.json.{Json, Reads}
 
 case class DownstreamErrorCode(code: String) {
   def toMtd(httpStatus: Int): MtdError = MtdError(code = code, message = "", httpStatus = httpStatus)
 }
 
 object DownstreamErrorCode {
-  implicit val reads: Reads[DownstreamErrorCode] = (JsPath \ "errorCode").read[String].map(DownstreamErrorCode(_))
+  implicit val reads: Reads[DownstreamErrorCode] = Json.reads[DownstreamErrorCode]
 }
 
 sealed trait DownstreamError

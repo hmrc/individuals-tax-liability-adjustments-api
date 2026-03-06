@@ -35,13 +35,15 @@ class CreateAmendTaxLiabilityAdjustmentsService @Inject() (connector: CreateAmen
       .map(_.leftMap(mapDownstreamErrors(errorMap)))
 
   private val errorMap: Map[String, MtdError] = Map(
-    "1215" -> NinoFormatError,
-    "1117" -> TaxYearFormatError,
-    "1216" -> InternalError,
-    "1000" -> InternalError,
-    "1115" -> RuleTaxYearNotEndedError,
-    "4200" -> RuleOutsideAmendmentWindowError,
-    "5000" -> InternalError
+    "INVALID_TAXABLE_ENTITY_ID" -> NinoFormatError,
+    "INVALID_TAX_YEAR"          -> TaxYearFormatError,
+    "INVALID_CORRELATION_ID"    -> InternalError,
+    "INVALID_PAYLOAD"           -> InternalError,
+    "INVALID_SUBMISSION"        -> RuleTaxYearNotEndedError,
+    "TAX_YEAR_NOT_SUPPORTED"    -> InternalError,
+    "OUTSIDE_AMENDMENT_WINDOW"  -> RuleOutsideAmendmentWindowError,
+    "SERVER_ERROR"              -> InternalError,
+    "SERVICE_UNAVAILABLE"       -> InternalError
   )
 
 }

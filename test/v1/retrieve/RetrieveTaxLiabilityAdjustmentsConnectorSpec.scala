@@ -21,17 +21,20 @@ import uk.gov.hmrc.http.StringContextOps
 import v1.retrieve.def1.model.request.Def1_RetrieveTaxLiabilityAdjustmentsRequestData
 import v1.retrieve.model.request.RetrieveTaxLiabilityAdjustmentsRequestData
 import v1.retrieve.model.response.RetrieveTaxLiabilityAdjustmentsResponse
+
 import scala.concurrent.Future
 import api.models.domain.{Nino, TaxYear}
 import api.models.errors.{DownstreamErrorCode, DownstreamErrors}
 import api.models.outcomes.ResponseWrapper
 import v1.retrieve.def1.fixture.Def1_RetrieveTaxLiabilityAdjustmentsFixture.response
 
+import java.net.URL
+
 class RetrieveTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
 
-  private val nino          = "AA123456A"
-  private val taxYear       = TaxYear.fromMtd("2026-27")
-  private val downstreamUrl = url"$baseUrl/itsd/adjustments/tax/$nino?taxYear=${taxYear.asTysDownstream}"
+  private val nino: String       = "AA123456A"
+  private val taxYear: String    = "2026-27"
+  private val downstreamUrl: URL = url"$baseUrl/itsa/income-tax/v1/26-27/adjustments/tax/$nino"
 
   trait Test extends ConnectorTest {
 
@@ -39,7 +42,7 @@ class RetrieveTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
       new RetrieveTaxLiabilityAdjustmentsConnector(http = mockHttpClient, appConfig = mockAppConfig)
 
     val requestData: RetrieveTaxLiabilityAdjustmentsRequestData =
-      Def1_RetrieveTaxLiabilityAdjustmentsRequestData(Nino(nino), taxYear)
+      Def1_RetrieveTaxLiabilityAdjustmentsRequestData(Nino(nino), TaxYear.fromMtd(taxYear))
 
   }
 

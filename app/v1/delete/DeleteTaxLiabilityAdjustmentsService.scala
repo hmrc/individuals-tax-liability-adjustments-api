@@ -35,12 +35,14 @@ class DeleteTaxLiabilityAdjustmentsService @Inject() (connector: DeleteTaxLiabil
       .map(_.leftMap(mapDownstreamErrors(errorMap)))
 
   private val errorMap: Map[String, MtdError] = Map(
-    "1215" -> NinoFormatError,
-    "1117" -> TaxYearFormatError,
-    "1216" -> InternalError,
-    "5010" -> NotFoundError,
-    "4200" -> RuleOutsideAmendmentWindowError,
-    "5000" -> InternalError
+    "INVALID_TAXABLE_ENTITY_ID" -> NinoFormatError,
+    "INVALID_TAX_YEAR"          -> TaxYearFormatError,
+    "INVALID_CORRELATION_ID"    -> InternalError,
+    "NO_DATA_FOUND"             -> NotFoundError,
+    "TAX_YEAR_NOT_SUPPORTED"    -> InternalError,
+    "OUTSIDE_AMENDMENT_WINDOW"  -> RuleOutsideAmendmentWindowError,
+    "SERVER_ERROR"              -> InternalError,
+    "SERVICE_UNAVAILABLE"       -> InternalError
   )
 
 }

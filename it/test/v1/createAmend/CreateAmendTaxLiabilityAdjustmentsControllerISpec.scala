@@ -55,17 +55,16 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
   "Calling the Create or Amend Tax Liability Adjustments endpoint" should {
     "return a 204 status code" when {
       "any valid request is made with a supported tax year that has not ended and suspendTemporalValidations is true" in new Test {
-        override val taxYear: String = notEndedTaxYear.asMtd
+        override val taxYear: String       = notEndedTaxYear.asMtd
+        override def downstreamUri: String = s"/itsa/income-tax/v1/${notEndedTaxYear.asTysDownstream}/adjustments/tax/$nino"
 
         override def setupStubs(): StubMapping = {
           AuditStub.audit()
           MtdIdLookupStub.ninoFound(nino)
           AuthStub.authorised()
-
           DownstreamStub.onSuccess(
             method = DownstreamStub.PUT,
             uri = downstreamUri,
-            queryParams = Map("taxYear" -> notEndedTaxYear.asTysDownstream),
             status = NO_CONTENT,
             body = JsObject.empty
           )
@@ -142,7 +141,6 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
             DownstreamStub.onError(
               method = DownstreamStub.PUT,
               uri = downstreamUri,
-              queryParams = Map("taxYear" -> parsedTaxYear.asTysDownstream),
               errorStatus = downstreamStatus,
               errorBody = errorBody(downstreamCode)
             )
@@ -157,14 +155,16 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
       }
 
       val errors = List(
-        (BAD_REQUEST, "1215", BAD_REQUEST, NinoFormatError),
-        (BAD_REQUEST, "1115", BAD_REQUEST, RuleTaxYearNotEndedError),
-        (BAD_REQUEST, "1117", BAD_REQUEST, TaxYearFormatError),
-        (BAD_REQUEST, "1216", INTERNAL_SERVER_ERROR, InternalError),
-        (BAD_REQUEST, "1000", INTERNAL_SERVER_ERROR, InternalError),
+        (BAD_REQUEST, "INVALID_TAXABLE_ENTITY_ID", BAD_REQUEST, NinoFormatError),
+        (BAD_REQUEST, "INVALID_TAX_YEAR", BAD_REQUEST, TaxYearFormatError),
+        (BAD_REQUEST, "INVALID_CORRELATION_ID", INTERNAL_SERVER_ERROR, InternalError),
+        (BAD_REQUEST, "INVALID_PAYLOAD", INTERNAL_SERVER_ERROR, InternalError),
         (BAD_REQUEST, "UNMATCHED_STUB_ERROR", BAD_REQUEST, RuleIncorrectGovTestScenarioError),
-        (UNPROCESSABLE_ENTITY, "4200", BAD_REQUEST, RuleOutsideAmendmentWindowError),
-        (NOT_IMPLEMENTED, "5000", INTERNAL_SERVER_ERROR, InternalError)
+        (UNPROCESSABLE_ENTITY, "INVALID_SUBMISSION", BAD_REQUEST, RuleTaxYearNotEndedError),
+        (UNPROCESSABLE_ENTITY, "TAX_YEAR_NOT_SUPPORTED", INTERNAL_SERVER_ERROR, InternalError),
+        (UNPROCESSABLE_ENTITY, "OUTSIDE_AMENDMENT_WINDOW", BAD_REQUEST, RuleOutsideAmendmentWindowError),
+        (INTERNAL_SERVER_ERROR, "SERVER_ERROR", INTERNAL_SERVER_ERROR, InternalError),
+        (SERVICE_UNAVAILABLE, "SERVICE_UNAVAILABLE", INTERNAL_SERVER_ERROR, InternalError)
       )
 
       errors.foreach(serviceErrorTest.tupled)
@@ -192,16 +192,21 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
         )
     }
 
-    def downstreamUri: String = s"/itsd/adjustments/tax/$nino"
+    def downstreamUri: String = s"/itsa/income-tax/v1/${parsedTaxYear.asTysDownstream}/adjustments/tax/$nino"
 
     def errorBody(code: String): String =
       s"""
-        |[
-        |  {
-        |    "errorCode": "$code",
-        |    "errorDescription": "message"
-        |  }
-        |]
+         |{
+         |  "origin": "HoD",
+         |  "response": {
+         |    "failures": [
+         |      {
+         |        "type": "$code",
+         |        "reason": "downstream message"
+         |      }
+         |    ]
+         |  }
+         |}
       """.stripMargin
 
   }

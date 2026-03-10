@@ -30,7 +30,7 @@ class CreateAmendTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
 
   private val nino          = "AA123456A"
   private val taxYear       = TaxYear.fromMtd("2026-27")
-  private val downstreamUrl = url"$baseUrl/itsd/adjustments/tax/$nino?taxYear=${taxYear.asTysDownstream}"
+  private val downstreamUrl = url"$baseUrl/itsa/income-tax/v1/${taxYear.asTysDownstream}/adjustments/tax/$nino"
 
   trait Test extends ConnectorTest {
 

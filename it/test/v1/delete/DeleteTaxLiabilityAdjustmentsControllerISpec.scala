@@ -38,7 +38,6 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
           DownstreamStub.onSuccess(
             method = DownstreamStub.DELETE,
             uri = downstreamUri,
-            queryParams = downstreamQueryParams,
             status = NO_CONTENT,
             body = JsObject.empty
           )
@@ -89,7 +88,7 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
               AuditStub.audit()
               MtdIdLookupStub.ninoFound(nino)
               AuthStub.authorised()
-              DownstreamStub.onError(DownstreamStub.DELETE, downstreamUri, downstreamQueryParams, downstreamStatus, errorBody(downstreamCode))
+              DownstreamStub.onError(DownstreamStub.DELETE, downstreamUri, downstreamStatus, errorBody(downstreamCode))
             }
 
             val response: WSResponse = await(request().delete())
@@ -101,13 +100,15 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
         }
 
         val errors = List(
-          (BAD_REQUEST, "1215", BAD_REQUEST, NinoFormatError),
-          (BAD_REQUEST, "1117", BAD_REQUEST, TaxYearFormatError),
-          (BAD_REQUEST, "1216", INTERNAL_SERVER_ERROR, InternalError),
+          (BAD_REQUEST, "INVALID_TAXABLE_ENTITY_ID", BAD_REQUEST, NinoFormatError),
+          (BAD_REQUEST, "INVALID_TAX_YEAR", BAD_REQUEST, TaxYearFormatError),
+          (BAD_REQUEST, "INVALID_CORRELATION_ID", INTERNAL_SERVER_ERROR, InternalError),
           (BAD_REQUEST, "UNMATCHED_STUB_ERROR", BAD_REQUEST, RuleIncorrectGovTestScenarioError),
-          (NOT_FOUND, "5010", NOT_FOUND, NotFoundError),
-          (UNPROCESSABLE_ENTITY, "4200", BAD_REQUEST, RuleOutsideAmendmentWindowError),
-          (NOT_IMPLEMENTED, "5000", INTERNAL_SERVER_ERROR, InternalError)
+          (NOT_FOUND, "NO_DATA_FOUND", NOT_FOUND, NotFoundError),
+          (UNPROCESSABLE_ENTITY, "TAX_YEAR_NOT_SUPPORTED", INTERNAL_SERVER_ERROR, InternalError),
+          (UNPROCESSABLE_ENTITY, "OUTSIDE_AMENDMENT_WINDOW", BAD_REQUEST, RuleOutsideAmendmentWindowError),
+          (INTERNAL_SERVER_ERROR, "SERVER_ERROR", INTERNAL_SERVER_ERROR, InternalError),
+          (SERVICE_UNAVAILABLE, "SERVICE_UNAVAILABLE", INTERNAL_SERVER_ERROR, InternalError)
         )
 
         errors.foreach(serviceErrorTest.tupled)
@@ -134,18 +135,21 @@ class DeleteTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseSpec {
         )
     }
 
-    def downstreamUri: String = s"/itsd/adjustments/tax/$nino"
-
-    val downstreamQueryParams: Map[String, String] = Map("taxYear" -> "26-27")
+    def downstreamUri: String = s"/itsa/income-tax/v1/26-27/adjustments/tax/$nino"
 
     def errorBody(code: String): String =
       s"""
-        |[
-        |  {
-        |    "errorCode": "$code",
-        |    "errorDescription": "message"
-        |  }
-        |]
+         |{
+         |  "origin": "HoD",
+         |  "response": {
+         |    "failures": [
+         |      {
+         |        "type": "$code",
+         |        "reason": "downstream message"
+         |      }
+         |    ]
+         |  }
+         |}
       """.stripMargin
 
   }

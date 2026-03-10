@@ -37,7 +37,7 @@ class DeleteTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
 
       val expected: Right[Nothing, ResponseWrapper[Unit]] = Right(ResponseWrapper(correlationId, ()))
 
-      willDelete(url = url"$baseUrl/itsd/adjustments/tax/$nino?taxYear=26-27")
+      willDelete(url = url"$baseUrl/itsa/income-tax/v1/26-27/adjustments/tax/$nino")
         .returning(Future.successful(expected))
 
       val result: DownstreamOutcome[Unit] = await(connector.deleteTaxLiabilityAdjustments(request))

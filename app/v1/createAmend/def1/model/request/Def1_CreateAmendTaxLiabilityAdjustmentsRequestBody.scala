@@ -19,10 +19,8 @@ package v1.createAmend.def1.model.request
 import v1.createAmend.model.request.CreateAmendTaxLiabilityAdjustmentsRequestBody
 import play.api.libs.json.{Json, OFormat}
 
-case class Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody(
-    carryBackLossesDecrease: Option[CarryBackLossesDecrease],
-    averagingAdjustmentsDecrease: Option[AveragingAdjustmentsDecrease]
-) extends CreateAmendTaxLiabilityAdjustmentsRequestBody
+case class Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody(carryBackLossesDecrease: Option[CarryBackLossesDecrease])
+    extends CreateAmendTaxLiabilityAdjustmentsRequestBody
 
 object Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody {
 

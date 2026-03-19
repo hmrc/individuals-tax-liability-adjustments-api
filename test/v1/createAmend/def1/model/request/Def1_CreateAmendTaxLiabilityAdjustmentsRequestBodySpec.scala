@@ -30,12 +30,7 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsRequestBodySpec extends UnitSpec {
       |    "incomeTax": true,
       |    "class4": true,
       |    "capitalGainsTax": true
-      |  },
-      |  "averagingAdjustmentsDecrease": {
-      |     "incomeTax": true,
-      |     "class4": true,
-      |     "capitalGainsTax": true
-      |   }
+      |  }
       |}
       |""".stripMargin
   )

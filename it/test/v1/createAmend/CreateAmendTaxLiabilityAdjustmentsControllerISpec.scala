@@ -42,11 +42,6 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
       |    "incomeTax": -5000.99,
       |    "class4": -5000.99,
       |    "capitalGainsTax": -5000.99
-      |  },
-      |  "averagingAdjustmentsDecrease": {
-      |    "incomeTax": -5000.99,
-      |    "class4": -5000.99,
-      |    "capitalGainsTax": -5000.99
       |  }
       |}
     """.stripMargin
@@ -117,9 +112,6 @@ class CreateAmendTaxLiabilityAdjustmentsControllerISpec extends IntegrationBaseS
             BAD_REQUEST,
             ValueFormatError.withPaths(
               Seq(
-                "/averagingAdjustmentsDecrease/incomeTax",
-                "/averagingAdjustmentsDecrease/class4",
-                "/averagingAdjustmentsDecrease/capitalGainsTax",
                 "/carryBackLossesDecrease/incomeTax",
                 "/carryBackLossesDecrease/class4",
                 "/carryBackLossesDecrease/capitalGainsTax"

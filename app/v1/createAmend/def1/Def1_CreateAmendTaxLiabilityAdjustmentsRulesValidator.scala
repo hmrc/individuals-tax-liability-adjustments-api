@@ -31,9 +31,7 @@ object Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidator extends RulesValida
       parsed: Def1_CreateAmendTaxLiabilityAdjustmentsRequestData): Validated[Seq[MtdError], Def1_CreateAmendTaxLiabilityAdjustmentsRequestData] = {
     import parsed.*
 
-    combine(
-      validateCarryBackLossesDecrease(body.carryBackLossesDecrease)
-    ).onSuccess(parsed)
+    validateCarryBackLossesDecrease(body.carryBackLossesDecrease).onSuccess(parsed)
   }
 
   private def validateCarryBackLossesDecrease(carryBackLossesDecrease: Option[CarryBackLossesDecrease]): Validated[Seq[MtdError], Unit] = {

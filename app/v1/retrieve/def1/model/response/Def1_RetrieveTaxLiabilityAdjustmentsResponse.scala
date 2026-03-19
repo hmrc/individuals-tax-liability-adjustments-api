@@ -20,11 +20,8 @@ import api.models.domain.Timestamp
 import play.api.libs.json.{Json, OFormat}
 import v1.retrieve.model.response.RetrieveTaxLiabilityAdjustmentsResponse
 
-case class Def1_RetrieveTaxLiabilityAdjustmentsResponse(
-    submittedOn: Timestamp,
-    carryBackLossesDecrease: Option[CarryBackLossesDecrease],
-    averagingAdjustmentsDecrease: Option[AveragingAdjustmentsDecrease]
-) extends RetrieveTaxLiabilityAdjustmentsResponse
+case class Def1_RetrieveTaxLiabilityAdjustmentsResponse(submittedOn: Timestamp, carryBackLossesDecrease: Option[CarryBackLossesDecrease])
+    extends RetrieveTaxLiabilityAdjustmentsResponse
 
 object Def1_RetrieveTaxLiabilityAdjustmentsResponse {
 

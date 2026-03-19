@@ -75,7 +75,7 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsValidatorSpec extends UnitSpec with
         }
       }
 
-      "the submitted request body has empty carryBackLossesDecrease and averagingAdjustmentsDecrease objects" in {
+      "the submitted request body has empty carryBackLossesDecrease objects" in {
         val invalidJson: JsValue = requestBodyJson
           .replaceWithEmptyObject("/carryBackLossesDecrease")
 

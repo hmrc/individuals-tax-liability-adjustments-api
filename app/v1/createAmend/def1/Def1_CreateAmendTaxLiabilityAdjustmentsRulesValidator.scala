@@ -16,11 +16,11 @@
 
 package v1.createAmend.def1
 
-import cats.data.Validated
-import cats.implicits.*
 import api.controllers.validators.RulesValidator
 import api.controllers.validators.resolvers.ResolveParsedNumber
 import api.models.errors.MtdError
+import cats.data.Validated
+import cats.implicits.*
 import v1.createAmend.def1.model.request.*
 
 object Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidator extends RulesValidator[Def1_CreateAmendTaxLiabilityAdjustmentsRequestData] {
@@ -31,23 +31,7 @@ object Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidator extends RulesValida
       parsed: Def1_CreateAmendTaxLiabilityAdjustmentsRequestData): Validated[Seq[MtdError], Def1_CreateAmendTaxLiabilityAdjustmentsRequestData] = {
     import parsed.*
 
-    combine(
-      validateAveragingAdjustmentsDecrease(body.averagingAdjustmentsDecrease),
-      validateCarryBackLossesDecrease(body.carryBackLossesDecrease)
-    ).onSuccess(parsed)
-  }
-
-  private def validateAveragingAdjustmentsDecrease(
-      averagingAdjustmentsDecrease: Option[AveragingAdjustmentsDecrease]): Validated[Seq[MtdError], Unit] = {
-    averagingAdjustmentsDecrease.fold(valid) { averagingAdjustmentsDecrease =>
-      List(
-        (averagingAdjustmentsDecrease.incomeTax, "/averagingAdjustmentsDecrease/incomeTax"),
-        (averagingAdjustmentsDecrease.class4, "/averagingAdjustmentsDecrease/class4"),
-        (averagingAdjustmentsDecrease.capitalGainsTax, "/averagingAdjustmentsDecrease/capitalGainsTax")
-      ).traverse_ { case (value, path) =>
-        resolveNonNegativeParsedNumber(value, path)
-      }
-    }
+    validateCarryBackLossesDecrease(body.carryBackLossesDecrease).onSuccess(parsed)
   }
 
   private def validateCarryBackLossesDecrease(carryBackLossesDecrease: Option[CarryBackLossesDecrease]): Validated[Seq[MtdError], Unit] = {

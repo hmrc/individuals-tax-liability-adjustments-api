@@ -17,12 +17,12 @@
 package v1.createAmend.def1
 
 import api.models.domain.{Nino, TaxYear}
-import api.models.errors.{ErrorWrapper, MtdError, NinoFormatError, RuleIncorrectOrEmptyBodyError, ValueFormatError}
+import api.models.errors.*
 import api.models.utils.JsonErrorValidators
 import api.utils.UnitSpec
-import play.api.libs.json.{JsBoolean, JsNumber, JsObject, JsValue, Json}
-import v1.createAmend.def1.model.request.Def1_CreateAmendTaxLiabilityAdjustmentsRequestData
+import play.api.libs.json.*
 import v1.createAmend.def1.fixture.Def1_CreateAmendTaxLiabilityAdjustmentsFixture.*
+import v1.createAmend.def1.model.request.Def1_CreateAmendTaxLiabilityAdjustmentsRequestData
 
 class Def1_CreateAmendTaxLiabilityAdjustmentsValidatorSpec extends UnitSpec with JsonErrorValidators {
 
@@ -75,16 +75,14 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsValidatorSpec extends UnitSpec with
         }
       }
 
-      "the submitted request body has empty carryBackLossesDecrease and averagingAdjustmentsDecrease objects" in {
+      "the submitted request body has empty carryBackLossesDecrease objects" in {
         val invalidJson: JsValue = requestBodyJson
           .replaceWithEmptyObject("/carryBackLossesDecrease")
-          .replaceWithEmptyObject("/averagingAdjustmentsDecrease")
 
         validate(body = invalidJson) shouldBe error(
           RuleIncorrectOrEmptyBodyError.withPaths(
             Seq(
-              "/carryBackLossesDecrease",
-              "/averagingAdjustmentsDecrease"
+              "/carryBackLossesDecrease"
             )
           )
         )
@@ -93,9 +91,6 @@ class Def1_CreateAmendTaxLiabilityAdjustmentsValidatorSpec extends UnitSpec with
 
     "return ValueFormatError" when {
       Seq(
-        "/averagingAdjustmentsDecrease/incomeTax",
-        "/averagingAdjustmentsDecrease/class4",
-        "/averagingAdjustmentsDecrease/capitalGainsTax",
         "/carryBackLossesDecrease/incomeTax",
         "/carryBackLossesDecrease/class4",
         "/carryBackLossesDecrease/capitalGainsTax"

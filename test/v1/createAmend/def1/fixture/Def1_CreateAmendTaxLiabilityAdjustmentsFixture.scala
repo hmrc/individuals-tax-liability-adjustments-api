@@ -17,16 +17,9 @@
 package v1.createAmend.def1.fixture
 
 import play.api.libs.json.{JsValue, Json}
-import v1.createAmend.def1.model.request.{AveragingAdjustmentsDecrease, CarryBackLossesDecrease, Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody}
+import v1.createAmend.def1.model.request.{CarryBackLossesDecrease, Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody}
 
 object Def1_CreateAmendTaxLiabilityAdjustmentsFixture {
-
-  val averagingAdjustmentsDecrease: AveragingAdjustmentsDecrease =
-    AveragingAdjustmentsDecrease(
-      incomeTax = Some(5000.99),
-      class4 = Some(5000.99),
-      capitalGainsTax = Some(5000.99)
-    )
 
   val carryBackLossesDecrease: CarryBackLossesDecrease =
     CarryBackLossesDecrease(
@@ -42,20 +35,12 @@ object Def1_CreateAmendTaxLiabilityAdjustmentsFixture {
       |    "incomeTax": 5000.99,
       |    "class4": 5000.99,
       |    "capitalGainsTax": 5000.99
-      |  },
-      |  "averagingAdjustmentsDecrease": {
-      |    "incomeTax": 5000.99,
-      |    "class4": 5000.99,
-      |    "capitalGainsTax": 5000.99
       |  }
       |}
     """.stripMargin
   )
 
   val requestBodyModel: Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody =
-    Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody(
-      carryBackLossesDecrease = Some(carryBackLossesDecrease),
-      averagingAdjustmentsDecrease = Some(averagingAdjustmentsDecrease)
-    )
+    Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody(carryBackLossesDecrease = Some(carryBackLossesDecrease))
 
 }

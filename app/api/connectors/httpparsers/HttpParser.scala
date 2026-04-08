@@ -21,32 +21,14 @@ import api.utils.Logging
 import play.api.libs.json.*
 import uk.gov.hmrc.http.HttpResponse
 
-import scala.util.{Success, Try}
+import scala.util.Try
 
 trait HttpParser extends Logging {
 
-  implicit class KnownJsonResponse(response: HttpResponse) {
+  implicit class JsonResponseHelper(response: HttpResponse) {
+    private lazy val jsonOpt: Option[JsValue] = Try(response.json).toOption
 
-    def validateJson[T](implicit reads: Reads[T]): Option[T] = {
-      Try(response.json) match {
-        case Success(json: JsValue) =>
-          parseResult(json)
-
-        // $COVERAGE-OFF$
-        case _ =>
-          logger.warn("[KnownJsonResponse][validateJson] No JSON was returned")
-          None
-        // $COVERAGE-ON$
-      }
-    }
-
-    private def parseResult[T](json: JsValue)(implicit reads: Reads[T]): Option[T] = json.validate[T] match {
-      case JsSuccess(value, _) => Some(value)
-      case JsError(error) =>
-        logger.warn(s"[KnownJsonResponse][validateJson] Unable to parse JSON: $error")
-        None
-    }
-
+    def validateJson[T](implicit reads: Reads[T]): Option[T] = jsonOpt.flatMap(_.asOpt)
   }
 
   def retrieveCorrelationId(response: HttpResponse): String = response.header("CorrelationId").getOrElse("")
@@ -58,9 +40,11 @@ trait HttpParser extends Logging {
     (__ \ "response" \ "failures").read[Seq[JsObject]].map(_.map(obj => DownstreamErrorCode((obj \ "type").as[String])))
 
   def parseErrors(response: HttpResponse): DownstreamError = {
-    lazy val singleError                = response.validateJson[DownstreamErrorCode].map(err => DownstreamErrors.single(err))
-    lazy val multipleTopLevelErrorCodes = response.validateJson(multipleTopLevelErrorCodesReads).map(errs => DownstreamErrors(errs))
-    lazy val multipleFailureErrorTypes  = response.validateJson(multipleFailureErrorTypesReads).map(errs => DownstreamErrors(errs))
+    val wrappedResponse: JsonResponseHelper = new JsonResponseHelper(response)
+
+    lazy val singleError                = wrappedResponse.validateJson[DownstreamErrorCode].map(err => DownstreamErrors.single(err))
+    lazy val multipleTopLevelErrorCodes = wrappedResponse.validateJson(multipleTopLevelErrorCodesReads).map(errs => DownstreamErrors(errs))
+    lazy val multipleFailureErrorTypes  = wrappedResponse.validateJson(multipleFailureErrorTypesReads).map(errs => DownstreamErrors(errs))
 
     lazy val unableToParseJsonError = {
       logger.warn(s"unable to parse errors from response: ${response.body}")

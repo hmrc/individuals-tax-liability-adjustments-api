@@ -1,6 +1,9 @@
 Individuals Tax Liability Adjustments API
 ========================
 
+
+[![Apache-2.0 license](http://img.shields.io/badge/license-Apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+
 The Individuals Tax Liability Adjustments API allows a developer to retrieve, create or amend, and delete data
 relating to tax liability adjustments.
 
@@ -11,23 +14,23 @@ relating to tax liability adjustments.
 - sbt 1.10.x
 - [Service Manager V2](https://github.com/hmrc/sm2)
 
-## Running the microservice
+## Development Setup
 
 Run the microservice from the console using: `sbt run` (starts on port 7767 by default)
 
 Start the service manager profile:
 
 ```bash
-sm2 --start MTDFB_INDIVIDUALS_TAX_LIABILITY_ADJUSTMENTS
+sm2 -start MTDFB_INDIVIDUALS_TAX_LIABILITY_ADJUSTMENTS
 ```
 
-## Running test
+## Run test
 
 Run unit tests: `sbt test`
 
 Run integration tests: `sbt it/test`
 
-## Viewing Open API Spec (OAS) docs
+## View OpenAPI Specification (OAS) documentation
 
 To view the OpenAPI documentation locally, ensure the API is running.
 
@@ -60,7 +63,7 @@ You can create a GitHub issue [here](https://github.com/hmrc/income-tax-mtd-chan
 
 ## API Reference / Documentation
 
-Available on the [HMRC Developer Hub](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/individuals-tax-liability-adjustments-api/1.0)
+Available on the [HMRC Developer Hub](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/individuals-tax-liability-adjustments-api)
 
 ## License
 

@@ -28,22 +28,26 @@ object Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidator extends RulesValida
   private val resolveNonNegativeParsedNumber = ResolveParsedNumber()
 
   def validateBusinessRules(
-      parsed: Def1_CreateAmendTaxLiabilityAdjustmentsRequestData): Validated[Seq[MtdError], Def1_CreateAmendTaxLiabilityAdjustmentsRequestData] = {
+                             parsed: Def1_CreateAmendTaxLiabilityAdjustmentsRequestData): Validated[Seq[MtdError], Def1_CreateAmendTaxLiabilityAdjustmentsRequestData] = {
     import parsed.*
 
-    validateCarryBackLossesDecrease(body.carryBackLossesDecrease).onSuccess(parsed)
+    validateCarryBackLossesDecrease(body).onSuccess(parsed)
   }
 
-  private def validateCarryBackLossesDecrease(carryBackLossesDecrease: Option[CarryBackLossesDecrease]): Validated[Seq[MtdError], Unit] = {
-    carryBackLossesDecrease.fold(valid) { carryBackLossesDecrease =>
-      List(
-        (carryBackLossesDecrease.incomeTax, "/carryBackLossesDecrease/incomeTax"),
-        (carryBackLossesDecrease.class4, "/carryBackLossesDecrease/class4"),
-        (carryBackLossesDecrease.capitalGainsTax, "/carryBackLossesDecrease/capitalGainsTax")
-      ).traverse_ { case (value, path) =>
-        resolveNonNegativeParsedNumber(value, path)
+  private def validateCarryBackLossesDecrease(body: Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody): Validated[Seq[MtdError], Unit] = {
+    body.carryBackLossesDecrease.fold(valid) { carryBackLossesDecrease => {
+      body.taxRefundedOrSetOff.fold(valid) { taxRefundedOrSetOff => {
+        List(
+          (carryBackLossesDecrease.incomeTax, "/carryBackLossesDecrease/incomeTax"),
+          (carryBackLossesDecrease.class4, "/carryBackLossesDecrease/class4"),
+          (carryBackLossesDecrease.capitalGainsTax, "/carryBackLossesDecrease/capitalGainsTax"),
+          (taxRefundedOrSetOff.amount, "/taxRefundedOrSetOff/amount")
+        ).traverse_ { case (value, path) =>
+          resolveNonNegativeParsedNumber(value, path)
+        }
+      }
       }
     }
+    }
   }
-
 }

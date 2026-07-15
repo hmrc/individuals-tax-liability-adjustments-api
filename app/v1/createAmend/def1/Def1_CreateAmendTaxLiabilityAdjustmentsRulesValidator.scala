@@ -28,15 +28,15 @@ object Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidator extends RulesValida
   private val resolveNonNegativeParsedNumber = ResolveParsedNumber()
 
   def validateBusinessRules(
-                             parsed: Def1_CreateAmendTaxLiabilityAdjustmentsRequestData): Validated[Seq[MtdError], Def1_CreateAmendTaxLiabilityAdjustmentsRequestData] = {
+      parsed: Def1_CreateAmendTaxLiabilityAdjustmentsRequestData): Validated[Seq[MtdError], Def1_CreateAmendTaxLiabilityAdjustmentsRequestData] = {
     import parsed.*
 
     validateCarryBackLossesDecrease(body).onSuccess(parsed)
   }
 
   private def validateCarryBackLossesDecrease(body: Def1_CreateAmendTaxLiabilityAdjustmentsRequestBody): Validated[Seq[MtdError], Unit] = {
-    body.carryBackLossesDecrease.fold(valid) { carryBackLossesDecrease => {
-      body.taxRefundedOrSetOff.fold(valid) { taxRefundedOrSetOff => {
+    body.carryBackLossesDecrease.fold(valid) { carryBackLossesDecrease =>
+      body.taxRefundedOrSetOff.fold(valid) { taxRefundedOrSetOff =>
         List(
           (carryBackLossesDecrease.incomeTax, "/carryBackLossesDecrease/incomeTax"),
           (carryBackLossesDecrease.class4, "/carryBackLossesDecrease/class4"),
@@ -46,8 +46,7 @@ object Def1_CreateAmendTaxLiabilityAdjustmentsRulesValidator extends RulesValida
           resolveNonNegativeParsedNumber(value, path)
         }
       }
-      }
-    }
     }
   }
+
 }

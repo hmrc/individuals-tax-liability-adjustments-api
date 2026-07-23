@@ -36,7 +36,7 @@
     {{#if (enabled 'r22_cl289_docs')}}
     "taxRefundedOrSetOff": {
       "type": "object",
-      "description": "Object containing details of Income Tax refunded or set off by HMRC or Jobcentre Plus during the tax year.",
+      "description": "{{#unless (releasedInProduction 'r22_cl289_docs')}}[Test only] {{/unless}}Object containing details of Income Tax refunded or set off by HMRC or Jobcentre Plus during the tax year.",
       "properties": {
         "amount": {
           "type": "number",
@@ -46,8 +46,9 @@
           "maximum": 99999999999.99,
           "example": 5000.99
         }
-      }
-    },
+      },
+      "additionalProperties": false
+    }
     {{/if}}
   },
   "additionalProperties": false

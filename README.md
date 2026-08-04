@@ -24,7 +24,7 @@ Start the service manager profile:
 sm2 -start MTDFB_INDIVIDUALS_TAX_LIABILITY_ADJUSTMENTS
 ```
 
-## Run Tests
+## Running Tests
 
 Run unit tests: `sbt test`
 

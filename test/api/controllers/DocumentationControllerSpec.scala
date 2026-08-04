@@ -110,9 +110,9 @@ class DocumentationControllerSpec extends ControllerBaseSpec with MockAppConfig 
         numberOfTestOnlyOccurrences(result) shouldBe 0
 
         result should startWith(s"""openapi: "3.0.3"
-                                   |
-                                   |info:
-                                   |  version: "$apiVersionName"""".stripMargin)
+             |
+             |info:
+             |  version: "$apiVersionName"""".stripMargin)
       }
     }
 
@@ -138,9 +138,9 @@ class DocumentationControllerSpec extends ControllerBaseSpec with MockAppConfig 
         }
 
         result should startWith(s"""openapi: "3.0.3"
-                                  |
-                                  |info:
-                                  |  version: "$apiVersionName"""".stripMargin)
+             |
+             |info:
+             |  version: "$apiVersionName"""".stripMargin)
       }
     }
 
@@ -185,8 +185,9 @@ class DocumentationControllerSpec extends ControllerBaseSpec with MockAppConfig 
           "description",
           "context",
           List("category"),
-          List(APIVersion(apiVersion, APIStatus.BETA, endpointsEnabled = true)),
-          None)
+          List(APIVersion(apiVersion, APIStatus.BETA, APIAccessType.PUBLIC, endpointsEnabled = true)),
+          None
+        )
       )
 
     }

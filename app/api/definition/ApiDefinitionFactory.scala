@@ -17,6 +17,7 @@
 package api.definition
 
 import api.config.AppConfig
+import api.definition.APIAccessType.{CONTROLLED, PUBLIC}
 import api.routing.{Version, Version1}
 import api.utils.Logging
 import cats.data.Validated.Invalid
@@ -37,6 +38,7 @@ class ApiDefinitionFactory @Inject() (appConfig: AppConfig) extends Logging {
           APIVersion(
             version = Version1,
             status = buildAPIStatus(Version1),
+            access = if (appConfig.controlledAccessEnabled) CONTROLLED else PUBLIC,
             endpointsEnabled = appConfig.endpointsEnabled(Version1)
           )
         ),

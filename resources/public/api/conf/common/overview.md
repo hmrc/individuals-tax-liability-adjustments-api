@@ -1,3 +1,5 @@
+> HMRC is no longer accepting production credential access requests for new 2026–27 quarterly update products, as the market window for these products has now closed.
+
 Use the Individuals Tax Liability Adjustments API to submit, edit, retrieve and delete information about a customer’s tax liability adjustments.
 
 This API is related to the following customer journey:

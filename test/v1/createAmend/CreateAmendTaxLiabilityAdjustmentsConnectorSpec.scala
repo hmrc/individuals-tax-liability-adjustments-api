@@ -42,17 +42,16 @@ class CreateAmendTaxLiabilityAdjustmentsConnectorSpec extends ConnectorSpec {
     val requestData: CreateAmendTaxLiabilityAdjustmentsRequestData =
       Def1_CreateAmendTaxLiabilityAdjustmentsRequestData(Nino(nino), taxYear, requestBodyModel)
 
-    "CreateAmendTaxLiabilityAdjustmentsConnector" should {
-      "return a valid response" when {
-        "a valid request is made" in new HipTest with Test {
-          val outcome: Future[Right[Nothing, ResponseWrapper[Unit]]] =
-            Future.successful(Right(ResponseWrapper(correlationId, ())))
-          willPut(url = downstreamUrl, body = requestBodyModel).returns(outcome)
-          await(connector.createAmendTaxLiabilityAdjustments(requestData)) shouldBe outcome
-        }
+  }
+
+  "CreateAmendTaxLiabilityAdjustmentsConnector" should {
+    "return a valid response" when {
+      "a valid request is made" in new HipTest with Test {
+        val outcome: Right[Nothing, ResponseWrapper[Unit]] = Right(ResponseWrapper(correlationId, ()))
+        willPut(url = downstreamUrl, body = requestBodyModel).returns(Future.successful(outcome))
+        await(connector.createAmendTaxLiabilityAdjustments(requestData)) shouldBe outcome
       }
     }
-
   }
 
 }

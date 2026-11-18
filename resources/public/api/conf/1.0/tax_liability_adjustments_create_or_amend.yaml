@@ -30,6 +30,7 @@ security:
       - write:self-assessment
 
 requestBody:
+  required: true
   content:
     application/json:
       schema:
